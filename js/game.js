@@ -22,12 +22,12 @@ function setMessage(t){game.message=t;game.messageTime=70;$("battleMessage").tex
 function spawn(x,y,color,count=10){for(let i=0;i<count;i++)game.particles.push({x,y,vx:(Math.random()-.5)*8,vy:(Math.random()-.7)*8,life:25+Math.random()*20,color,size:2+Math.random()*5});}
 function attack(a,target,type){
  if(a.attackCooldown>0||a.stun>0||a.action==="jump"||a.action==="dash")return;
- const cost=type==="ultimate"?70:type==="special"?35:0;
+ const cost=(type==="ultimate"||type==="domain")?70:type==="special"?35:0;
  if(a.energy<cost){if(a===game.p)setMessage("ENERGIA INSUFICIENTE");return;}
  a.energy-=cost;
- const startup=type==="ultimate"?17:type==="special"?12:type==="heavy"?9:5;
- const duration=type==="ultimate"?52:type==="special"?36:type==="heavy"?27:18;
- a.action=type;a.actionTime=duration;a.attackCooldown=duration+(type==="ultimate"?24:10);a.blocking=false;
+ const startup=(type==="ultimate"||type==="domain")?17:type==="special"?12:type==="heavy"?9:5;
+ const duration=(type==="ultimate"||type==="domain")?52:type==="special"?36:type==="heavy"?27:18;
+ a.action=type;a.actionTime=duration;a.attackCooldown=duration+((type==="ultimate"||type==="domain")?24:10);a.blocking=false;
  a.attackEvent={type,target,resolveAt:game.frame+startup,resolved:false};
  spawn(a.x+a.face*24,370+a.y-126,a.data.color,type==="ultimate"?24:type==="special"?14:5);
 }
@@ -44,7 +44,7 @@ function updateFighter(a,other,dt,isPlayer){
  }else if(a.action!=="jump"&&a.action!=="dash"){
   if(isPlayer){
    const left=input("a")||input("arrowleft"),right=input("d")||input("arrowright");
-   a.charging=input("c")&&a.energy<100;
+   a.charging=input("shift")&&a.energy<100;
    if(a.charging){
     a.energy=Math.min(100,a.energy+.42*dt);
     a.vx*=.55;a.action="charge";a.blocking=false;a.chargePulse+=.22*dt;
@@ -55,14 +55,15 @@ function updateFighter(a,other,dt,isPlayer){
    else{
     const dir=(right?1:0)-(left?1:0);
     if(dir){
-     if(input("shift")){a.vx=dir*10;a.action="dash";a.actionTime=8;spawn(a.x,370+a.y-70,a.data.color,5);}
+     if(input("control")){a.vx=dir*10;a.action="dash";a.actionTime=8;spawn(a.x,370+a.y-70,a.data.color,5);}
      else{a.vx=dir*(4.2+a.data.speed*.018);a.action="walk";a.walk+=dt;}
     }else{a.vx*=.72;a.action="idle";}
     if((input("w")||input("arrowup"))&&a.onGround){a.vy=-13.5;a.onGround=false;a.action="jump";spawn(a.x,374,"#cbb6ff",7);}
-    if(input("j"))attack(a,other,"light");
-    else if(input("k"))attack(a,other,"heavy");
+    if(input("mouseleft")||input("j"))attack(a,other,"light");
+    else if(input("mouseright")||input("k"))attack(a,other,"heavy");
     else if(input("l"))attack(a,other,"special");
     else if(input("u"))attack(a,other,"ultimate");
+    else if(input("q"))attack(a,other,"domain");
    }
    }
   }else{
@@ -121,10 +122,14 @@ function resolveAttack(a){
  if(a.data.id==="megumi"&&type==="special"){spawn(a.x+a.face*65,290,"#16182c",24);}
  if(a.data.id==="todo"&&type==="special"){spawn(a.x,235,"#d5b4ff",16);}
  if(a.data.id==="sukuna"&&type==="ultimate"){spawn(target.x,240,"#ef4c78",40);}
- if(type==="ultimate"&&a.data.id!=="gojo"){
+ if(type==="domain"){
   const finishers={
+   gojo:{name:"EXPANSÃO DE DOMÍNIO: VAZIO ILIMITADO",kind:"void",life:190},
    megumi:{name:"EXPANSÃO DE DOMÍNIO: JARDIM DAS SOMBRAS QUIMÉRICAS",kind:"shadows",life:210},
-   sukuna:{name:"EXPANSÃO DE DOMÍNIO: SANTUÁRIO MALEVOLENTE",kind:"shrine",life:230}
+   sukuna:{name:"EXPANSÃO DE DOMÍNIO: SANTUÁRIO MALEVOLENTE",kind:"shrine",life:230},
+   yuji:{name:"BLACK FLASH: IMPACTO DA ALMA",kind:"finisher",life:95},
+   nobara:{name:"RESSONÂNCIA: BONECO DE PALHA",kind:"finisher",life:95},
+   todo:{name:"BOOGIE WOOGIE: TROCA E COMBO",kind:"finisher",life:95}
   };
   const domain=finishers[a.data.id];
   if(domain){
@@ -133,9 +138,6 @@ function resolveAttack(a){
    if(domain.kind==="void"){target.stun=Math.max(target.stun,95);target.action="hurt";spawn(target.x,220,"#b7d9ff",38);game.flash=18;}
    if(domain.kind==="shadows"){spawn(a.x,370,"#111326",46);target.stun=Math.max(target.stun,18);}
    if(domain.kind==="shrine"){spawn(target.x,245,"#ef4c78",42);target.stun=Math.max(target.stun,12);}
-  }else{
-   const names={yuji:"BLACK FLASH: IMPACTO DA ALMA",nobara:"RESSONÂNCIA: BONECO DE PALHA",todo:"BOOGIE WOOGIE: TROCA E COMBO"};
-   game.domain={name:names[a.data.id],kind:"finisher",color:a.data.color,life:95,owner:a.side,target,tick:0,age:0};
   }
  }
  const rangedMove=type==="special"||(a.data.id==="gojo"&&(type==="heavy"||type==="ultimate"))||(a.data.id==="megumi"&&type==="heavy")||(a.data.id==="nobara"&&type==="heavy");
@@ -186,12 +188,12 @@ function resolveAttack(a){
   }
   if(a===game.p){
    const moveNames={
-    gojo:{light:"SOCO",heavy:"AZUL: LAPSE",special:"REVERSÃO: VERMELHO",ultimate:"VAZIO ROXO: HOLLOW PURPLE"},
-    yuji:{light:"SOCO DE ENERGIA AMALDIÇOADA",heavy:"PUNHO DIVERGENTE",special:"PUNHO DIVERGENTE",ultimate:"BLACK FLASH"},
-    megumi:{light:"COMBATE CORPO A CORPO",heavy:"CÃES DIVINOS",special:"NUE",ultimate:"JARDIM DAS SOMBRAS QUIMÉRICAS"},
-    nobara:{light:"MARTELO",heavy:"RESSONÂNCIA",special:"HAIRPIN",ultimate:"RESSONÂNCIA: BONECO DE PALHA"},
-    sukuna:{light:"GOLPE",heavy:"CLIVAR",special:"DESMANTELAR",ultimate:"SANTUÁRIO MALEVOLENTE"},
-    todo:{light:"SOCO",heavy:"GOLPE DE BOOGIE",special:"BOOGIE WOOGIE",ultimate:"BOOGIE WOOGIE: TROCA"}
+    gojo:{light:"SOCO",heavy:"AZUL: LAPSE",special:"REVERSÃO: VERMELHO",ultimate:"VAZIO ROXO: HOLLOW PURPLE",domain:"VAZIO ILIMITADO"},
+    yuji:{light:"SOCO DE ENERGIA AMALDIÇOADA",heavy:"PUNHO DIVERGENTE",special:"PUNHO DIVERGENTE",ultimate:"TÉCNICA SUPREMA",domain:"BLACK FLASH: IMPACTO DA ALMA"},
+    megumi:{light:"COMBATE CORPO A CORPO",heavy:"CÃES DIVINOS",special:"NUE",ultimate:"TÉCNICA SUPREMA",domain:"JARDIM DAS SOMBRAS QUIMÉRICAS"},
+    nobara:{light:"MARTELO",heavy:"RESSONÂNCIA",special:"HAIRPIN",ultimate:"TÉCNICA SUPREMA",domain:"RESSONÂNCIA: BONECO DE PALHA"},
+    sukuna:{light:"GOLPE",heavy:"CLIVAR",special:"DESMANTELAR",ultimate:"TÉCNICA SUPREMA",domain:"SANTUÁRIO MALEVOLENTE"},
+    todo:{light:"SOCO",heavy:"GOLPE DE BOOGIE",special:"BOOGIE WOOGIE",ultimate:"TÉCNICA SUPREMA",domain:"BOOGIE WOOGIE: TROCA E COMBO"}
    };
    setMessage((blackFlash?"BLACK FLASH! ":moveNames[a.data.id]?.[type]||"TÉCNICA")+"  •  "+dealt);
   }
@@ -504,6 +506,7 @@ function loop(t){if(!game)return;const dt=last?Math.min(2.2,(t-last)/16.67):1;la
 function pause(){if(!game||finished)return;paused=!paused;$("overlay").classList.toggle("hidden",!paused);$("overlayTitle").textContent="PAUSADO";$("overlayText").textContent="A batalha está em pausa.";$("resumeBtn").textContent="CONTINUAR";if(!paused){last=0;raf=requestAnimationFrame(loop);}else cancelAnimationFrame(raf);}
 $("startBtn").onclick=()=>{show("select");buildRoster();showDetail();};$("backHome").onclick=()=>show("home");$("howBtn").onclick=$("howBtn2").onclick=()=>show("how");$("closeHow").onclick=()=>show("home");$("fightBtn").onclick=startFight;$("pauseBtn").onclick=pause;$("resumeBtn").onclick=()=>{if(finished){show("select");buildRoster();showDetail();}else pause();};$("quitBtn").onclick=()=>{cancelAnimationFrame(raf);game=null;show("select");buildRoster();showDetail();};
 window.addEventListener("keydown",e=>{const k=e.key.toLowerCase();if([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(k))e.preventDefault();keys[k]=true;if(k==="escape")pause();});window.addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false;});
+canvas.addEventListener("mousedown",e=>{if(e.button===0)keys.mouseleft=true;if(e.button===2)keys.mouseright=true;});window.addEventListener("mouseup",e=>{if(e.button===0)keys.mouseleft=false;if(e.button===2)keys.mouseright=false;});canvas.addEventListener("contextmenu",e=>e.preventDefault());
 document.querySelectorAll(".mobile-controls button").forEach(b=>{const k=b.dataset.key;b.addEventListener("pointerdown",e=>{e.preventDefault();keys[k]=true;});["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false));});
 buildRoster();showDetail();show("home");
 })();
