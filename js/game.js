@@ -62,7 +62,8 @@ function updateFighter(a,other,dt,isPlayer){
    game.aiWait-=dt;
    if(game.aiWait<=0){
     const dist=Math.abs(other.x-a.x), roll=Math.random();
-    if(dist>185){a.blocking=false;a.vx=a.face*(2.6+a.data.speed*.012);a.action="walk";}
+    if(dist>185&&dist<365&&a.energy>=35&&roll<.48){a.blocking=false;attack(a,other,"special");}
+    else if(dist>185){a.blocking=false;a.vx=a.face*(2.6+a.data.speed*.012);a.action="walk";}
     else if(roll<.17){a.blocking=true;a.action="block";a.actionTime=11;a.vx=0;}
     else{a.blocking=false;attack(a,other,roll<.30&&a.energy>=70?"ultimate":roll<.57&&a.energy>=35?"special":roll<.78?"heavy":"light");}
     game.aiWait=16+Math.random()*23;
@@ -182,6 +183,7 @@ function drawFighter(a){
  const bob=a.action==="idle"?Math.sin(a.breath)*2.8:moving?Math.sin(t*.42)*1.7:0;
  const stride=moving?Math.sin(t*.48)*13:jump?8:0;
  ctx.save();ctx.translate(x,y);ctx.scale(face,1);ctx.translate(0,bob);
+ if(attacking){const phase=1-a.actionTime/(a.action==="ultimate"?52:a.action==="special"?36:a.action==="heavy"?27:18);ctx.translate(Math.sin(phase*Math.PI)*5,0);ctx.rotate((a.action==="special"?.045:a.action==="heavy"?.075:.025)*Math.sin(phase*Math.PI));}
  // Ground aura and shadow
  const aura=ctx.createRadialGradient(0,-28,8,0,-28,78);
  aura.addColorStop(0,a.data.color+"55");aura.addColorStop(1,a.data.color+"00");
@@ -267,13 +269,24 @@ function drawFighter(a){
   ctx.fillStyle="#bd987b";ctx.fillRect(-23,-170,46,7);
  }
  if(isTodo){ctx.fillStyle="#c69d78";ctx.fillRect(-20,-174,40,5);}
- // Signature energy motif above the shoulder
+ // Layered cursed-energy charge: anticipation, rotating seals and character-colored sparks
  if(a.action==="special"||a.action==="ultimate"){
-  const radius=a.action==="ultimate"?64:39;
-  ctx.save();ctx.globalCompositeOperation="lighter";ctx.shadowColor=a.data.color;ctx.shadowBlur=26;
-  const pulse=1+Math.sin(game.frame*.3)*.08;
-  ctx.strokeStyle=a.data.color;ctx.lineWidth=a.action==="ultimate"?8:5;ctx.beginPath();ctx.arc(a.face*48,-126,radius*pulse,-1.25,1.25);ctx.stroke();
-  ctx.fillStyle=a.data.color;ctx.globalAlpha=.8;ctx.beginPath();ctx.arc(a.face*48,-126,a.action==="ultimate"?13:8,0,Math.PI*2);ctx.fill();ctx.restore();
+  const ultimate=a.action==="ultimate",phase=1-a.actionTime/(ultimate?52:36);
+  const radius=(ultimate?68:43)*(0.82+Math.sin(game.frame*.34)*.12);
+  const cx=a.face*(ultimate?56:48),cy=ultimate?-135:-126;
+  ctx.save();ctx.globalCompositeOperation="lighter";ctx.shadowColor=a.data.color;ctx.shadowBlur=ultimate?34:23;
+  ctx.globalAlpha=.35+.5*Math.sin(Math.min(1,phase+.15)*Math.PI);
+  ctx.strokeStyle=a.data.color;ctx.lineWidth=ultimate?7:4;
+  for(let ring=0;ring<(ultimate?3:2);ring++){
+   ctx.beginPath();ctx.ellipse(cx,cy,radius+ring*12,(radius+ring*12)*.56,game.frame*.025*(ring%2?1:-1),-.95,1.35);ctx.stroke();
+  }
+  ctx.globalAlpha=.9;
+  for(let spark=0;spark<7;spark++){
+   const ang=game.frame*.11+spark*Math.PI*2/7;
+   const sx=cx+Math.cos(ang)*radius,sy=cy+Math.sin(ang)*radius*.56;
+   ctx.fillStyle=spark%2?"#ffffff":a.data.color;ctx.beginPath();ctx.arc(sx,sy,2.5+(spark%3),0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
  }
  if(a.hitFlash>0){ctx.globalCompositeOperation="screen";ctx.fillStyle="#ffffff66";ctx.fillRect(-32,-240,64,240);}
  ctx.restore();
