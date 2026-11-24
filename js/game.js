@@ -348,9 +348,6 @@ function draw(){
   const d=game.domain, pulse=1+Math.sin(game.frame*.16)*.045;
   ctx.save();ctx.globalCompositeOperation="screen";
   if(d.kind==="void"){
-   ctx.fillStyle=ctx.createRadialGradient(480,220,15,480,220,560);ctx.fillStyle.addColorStop?.(0,"#dcecffbb");
-  }
-  if(d.kind==="void"){
    const g=ctx.createRadialGradient(480,230,10,480,230,600);g.addColorStop(0,"#dcecffaa");g.addColorStop(.35,"#6379c955");g.addColorStop(1,"#080817ee");ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
    for(let i=0;i<24;i++){const x=(i*83+game.frame*1.7)%960,y=(i*47+game.frame*.8)%380;ctx.fillStyle="#ffffffaa";ctx.beginPath();ctx.arc(x,y,1+(i%3),0,Math.PI*2);ctx.fill();}
   }else if(d.kind==="shrine"){
