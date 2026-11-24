@@ -369,13 +369,48 @@ function drawFighter(a){
  ctx.restore();
 }
 function draw(){
- const w=960,h=480;ctx.save();
+ const w=960,h=480;ctx.save();ctx.scale(4/3,1.5);
  if(game.shake>0)ctx.translate((Math.random()-.5)*game.shake,(Math.random()-.5)*game.shake);
  const stages=[["#111326","#292044","#704d83"],["#0b1b2a","#1c4054","#66859b"],["#1a1020","#3b1b38","#a34c70"]][game.stage];
  const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,stages[0]);sky.addColorStop(.68,stages[1]);sky.addColorStop(1,"#15101c");ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
  // moonlight and drifting atmosphere
  const moon=ctx.createRadialGradient(740,104,8,740,104,190);moon.addColorStop(0,"#d7c8ff55");moon.addColorStop(1,"#a68aff00");ctx.fillStyle=moon;ctx.fillRect(520,-80,440,360);
  ctx.fillStyle="#ffffff16";for(let i=0;i<65;i++){const px=(i*137+game.frame*.18)%960,py=(i*71)%325;ctx.fillRect(px,py,1.5,1.5);}
+ // Expanded cursed-city environment: distant mountains, layered rooftops and lanterns
+ const farGlow=ctx.createRadialGradient(480,255,10,480,255,520);farGlow.addColorStop(0,"#9a78d522");farGlow.addColorStop(1,"#9a78d500");ctx.fillStyle=farGlow;ctx.fillRect(0,0,w,h);
+ // Mountain silhouettes behind the city
+ for(let layer=0;layer<3;layer++){
+  ctx.fillStyle=["#15142a88","#101326bb","#0b0d1b"][layer];
+  ctx.beginPath();ctx.moveTo(0,330+layer*18);
+  for(let x=0;x<=w+80;x+=80){const peak=235+Math.sin(x*.013+layer*1.7)*42+Math.sin(x*.027+layer)*22;ctx.lineTo(x,peak+layer*25);}
+  ctx.lineTo(w,390);ctx.lineTo(0,390);ctx.closePath();ctx.fill();
+ }
+ // Distant temple roofs and pagoda silhouettes
+ for(let i=0;i<7;i++){
+  const x=35+i*145,base=330+(i%2)*15,scale=.62+(i%3)*.13;
+  ctx.save();ctx.translate(x,base);ctx.scale(scale,scale);
+  ctx.fillStyle="#090b18dd";ctx.fillRect(-30,-92,60,92);ctx.fillRect(-38,-98,76,8);
+  ctx.beginPath();ctx.moveTo(-53,-98);ctx.lineTo(0,-126);ctx.lineTo(53,-98);ctx.lineTo(43,-92);ctx.lineTo(-43,-92);ctx.closePath();ctx.fill();
+  ctx.fillRect(-4,-145,8,20);ctx.beginPath();ctx.moveTo(-12,-145);ctx.lineTo(0,-158);ctx.lineTo(12,-145);ctx.fill();
+  ctx.fillStyle="#d4a8ff22";ctx.fillRect(-20,-75,7,18);ctx.fillRect(13,-75,7,18);
+  ctx.restore();
+ }
+ // Warm cursed lanterns along the arena edges
+ for(let i=0;i<8;i++){
+  const x=55+i*122,y=270+(i%2)*22;
+  ctx.save();ctx.globalAlpha=.75;ctx.shadowColor=i%2?"#d78aff":"#ffb56b";ctx.shadowBlur=20;
+  ctx.fillStyle="#21182d";ctx.fillRect(x-8,y-13,16,25);
+  ctx.fillStyle=i%2?"#a96be8":"#e5a66e";ctx.fillRect(x-5,y-9,10,17);
+  ctx.strokeStyle="#8d78a8";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-13);ctx.lineTo(x,y-25);ctx.stroke();
+  ctx.restore();
+ }
+ // Falling sakura-like cursed leaves
+ for(let i=0;i<18;i++){
+  const x=(i*67+game.frame*(.25+(i%3)*.08))%w;
+  const y=(i*39+game.frame*(.12+(i%4)*.025))%340;
+  ctx.save();ctx.translate(x,y);ctx.rotate(game.frame*.018+i);
+  ctx.fillStyle=i%2?"#d7a2ff55":"#f2a8c955";ctx.beginPath();ctx.ellipse(0,0,4,2,0,0,Math.PI*2);ctx.fill();ctx.restore();
+ }
  // skyline / temple silhouettes
  for(let layer=0;layer<3;layer++){ctx.fillStyle=layer===0?"#080b19aa":layer===1?"#111224bb":"#171326";const base=315+layer*19;for(let i=0;i<11;i++){const bx=i*105-20+layer*15,bw=55+(i%3)*12,bh=85+(i*37%105);ctx.fillRect(bx,base-bh,bw,bh);ctx.fillRect(bx-8,base-bh-7,bw+16,7);if(i%3===0){ctx.fillRect(bx+bw/2-3,base-bh-26,6,20);ctx.beginPath();ctx.moveTo(bx-15,base-bh-7);ctx.lineTo(bx+bw/2,base-bh-20);ctx.lineTo(bx+bw+15,base-bh-7);ctx.fill();}}}
  // Character-specific domain visuals
