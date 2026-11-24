@@ -14,3 +14,17 @@
 
 /* Keep Todo centered: source frame places his face slightly left of center */
 .fighter-card .portrait img[alt="AOI TODO"],.detail-art img[alt="AOI TODO"]{object-position:38% center;}
+
+/* Combat polish: cursed-energy atmosphere and clearer interaction feedback */
+:root{--purple:#a879ff;--pink:#ff568f}
+.primary{background:linear-gradient(110deg,#7439cf,#bd4c9c);box-shadow:0 0 0 1px #d9b7ff22,0 10px 34px #8d48f044}
+.arena-wrap{border-color:#7650a0;box-shadow:0 0 0 1px #a56cff18,0 22px 75px #000b,0 0 42px #7d43c522}
+#gameCanvas{background:#090711;image-rendering:auto}
+.battle-screen{position:relative}
+.battle-screen:before{content:"";position:absolute;inset:95px -4vw auto;height:1px;background:linear-gradient(90deg,transparent,#9b68ef66,transparent);pointer-events:none}
+.fighter-card .portrait{position:relative}
+.fighter-card .portrait:after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,#090711aa);pointer-events:none}
+.fighter-card.selected{box-shadow:0 0 0 1px #b98aff55,0 0 26px #8f50e344}
+.mobile-controls button:active{background:#7441bb;transform:scale(.96);box-shadow:0 0 18px #9b68ef66}
+.battle-bottom #battleMessage{font-weight:800;letter-spacing:.5px;color:#e5d5ff}
+@media(max-width:560px){.arena-wrap{border-radius:4px}.mobile-controls button{min-width:36px;padding:11px 10px}}
