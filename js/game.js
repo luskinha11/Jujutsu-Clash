@@ -3,10 +3,10 @@
 const $ = id => document.getElementById(id);
 const screens = ["home","select","how","battle"];
 const roster = [
- {id:"gojo",image:"https://risibank.fr/cache/medias/0/40/4096/409603/full.png",name:"SATORU GOJO",short:"GOJO",role:"O MAIS FORTE",desc:"O feiticeiro mais poderoso. Usa o Ilimitado para controlar o espaço e manter os inimigos à distância.",color:"#8d72f5",glow:"#7352db",power:82,speed:96,tech:100,mark:"無",special:"Azul"},
+ {id:"gojo",image:"https://risibank.fr/cache/medias/0/40/4096/409603/full.png",name:"SATORU GOJO",short:"GOJO",role:"O MAIS FORTE",desc:"O feiticeiro mais poderoso. Usa o Ilimitado para controlar o espaço e manter os inimigos à distância.",color:"#8d72f5",glow:"#7352db",power:82,speed:96,tech:100,mark:"無",special:"Lapse Blue"},
  {id:"yuji",image:"https://i.pinimg.com/originals/e2/a8/3f/e2a83f055ba14fc63721f6089c1f7d08.jpg",name:"YUJI ITADORI",short:"YUJI",role:"RECIPIENTE",desc:"Combate corpo a corpo com força física absurda e energia amaldiçoada. Um lutador equilibrado.",color:"#e46b91",glow:"#9e315b",power:90,speed:84,tech:72,mark:"虎",special:"Punho Divergente"},
  {id:"megumi",image:"https://i.pinimg.com/originals/b6/91/ec/b691ec93472b5e1f93f34bcd4002a0cb.jpg",name:"MEGUMI FUSHIGURO",short:"MEGUMI",role:"USUÁRIO DAS SOMBRAS",desc:"Invoca shikigamis e controla o ritmo da luta com técnicas estratégicas das Dez Sombras.",color:"#6879c9",glow:"#384a9a",power:73,speed:80,tech:94,mark:"影",special:"Nue"},
- {id:"nobara",image:"https://i.pinimg.com/originals/85/19/67/851967be3b9fcca0670b6850b57904de.jpg",name:"NOBARA KUGISAKI",short:"NOBARA",role:"FEITICEIRA DE 1ª CLASSE",desc:"Usa martelo, pregos e ressonância para atingir o adversário com precisão.",color:"#dc8b65",glow:"#a85437",power:77,speed:83,tech:90,mark:"釘",special:"Ressonância"},
+ {id:"nobara",image:"https://i.pinimg.com/originals/85/19/67/851967be3b9fcca0670b6850b57904de.jpg",name:"NOBARA KUGISAKI",short:"NOBARA",role:"FEITICEIRA DE 1ª CLASSE",desc:"Usa martelo, pregos e ressonância para atingir o adversário com precisão.",color:"#dc8b65",glow:"#a85437",power:77,speed:83,tech:90,mark:"釘",special:"Hairpin"},
  {id:"sukuna",image:"https://i.pinimg.com/originals/a9/d7/39/a9d73956ecaa6a4b27bf757c00846f53.jpg",name:"RYOMEN SUKUNA",short:"SUKUNA",role:"REI DAS MALDIÇÕES",desc:"Uma presença aterradora com cortes invisíveis e poder destrutivo. Alto dano e pressão constante.",color:"#d94c70",glow:"#9c234b",power:100,speed:86,tech:98,mark:"宿",special:"Desmantelar"},
  {id:"todo",image:"https://us.oricon-group.com/upimg/detail/3000/3331/img660/Aoi-Todo-jjk-EP16%20%285%29.jpg",name:"AOI TODO",short:"TODO",role:"FEITICEIRO DE 1ª CLASSE",desc:"Força física monstruosa e uma técnica que troca posições. Especialista em combate direto.",color:"#a66dd6",glow:"#633b91",power:96,speed:78,tech:82,mark:"拍",special:"Boogie Woogie"}
 ];
@@ -89,9 +89,13 @@ function resolveAttack(a){
  if(a.data.id==="todo"&&type==="special"){target.x=Math.max(70,Math.min(890,a.x+a.face*105));target.vx=a.face*2;spawn(target.x,260,"#d8a9ff",22);}
  if(a.data.id==="megumi"&&type==="special"){spawn(a.x+a.face*80,270,"#8294d8",28);target.stun+=5;}
  if(a.data.id==="gojo"&&type==="special"){target.vx=a.face*10;spawn(target.x,240,"#78d9f0",20);}
+ if(a.data.id==="yuji"&&type==="special"){spawn(target.x,245,"#ffb3c8",14);}
+ if(a.data.id==="nobara"&&type==="special"){spawn(target.x,240,"#d99a6c",18);}
+ if(a.data.id==="megumi"&&type==="special"){spawn(a.x+a.face*65,290,"#16182c",24);}
+ if(a.data.id==="todo"&&type==="special"){spawn(a.x,235,"#d5b4ff",16);}
  if(a.data.id==="sukuna"&&type==="ultimate"){spawn(target.x,240,"#ef4c78",40);}
  if(type==="ultimate"){
-  const names={gojo:"EXPANSÃO DE DOMÍNIO: VAZIO ILIMITADO",yuji:"BLACK FLASH: IMPACTO FINAL",megumi:"JARDIM DAS SOMBRAS QUIMÉRICAS",nobara:"RESSONÂNCIA: RUPTURA",sukuna:"SANTUÁRIO MALEVOLENTE",todo:"BOOGIE WOOGIE: TROCA ABSOLUTA"};
+  const names={gojo:"EXPANSÃO DE DOMÍNIO: VAZIO ILIMITADO",yuji:"BLACK FLASH",megumi:"JARDIM DAS SOMBRAS QUIMÉRICAS",nobara:"RESSONÂNCIA",sukuna:"SANTUÁRIO MALEVOLENTE",todo:"BOOGIE WOOGIE"};
   game.domain={name:names[a.data.id]||"TÉCNICA SUPREMA",color:a.data.color,life:190,owner:a.side};
   game.domainPulse=1;
  }
@@ -110,7 +114,17 @@ function resolveAttack(a){
   if(type==="special"||type==="ultimate"){
    for(let i=0;i<3;i++)game.particles.push({x:a.x+a.face*(45+i*22),y:225-i*24,vx:a.face*(3+i),vy:(i-1)*1.7,life:28,color:a.data.color,size:16+i*8,orb:true});
   }
-  if(a===game.p)setMessage((blackFlash?"BLACK FLASH! ":type==="ultimate"?(game.domain?.name||"EXPANSÃO DE DOMÍNIO"):type==="special"?a.data.special.toUpperCase():"ACERTO")+"  •  "+dealt);
+  if(a===game.p){
+   const moveNames={
+    gojo:{light:"SOCO",heavy:"AZUL: LAPSE",special:"AZUL: LAPSE",ultimate:"VAZIO ILIMITADO"},
+    yuji:{light:"SOCO DE ENERGIA AMALDIÇOADA",heavy:"PUNHO DIVERGENTE",special:"PUNHO DIVERGENTE",ultimate:"BLACK FLASH"},
+    megumi:{light:"COMBATE CORPO A CORPO",heavy:"CÃES DIVINOS",special:"NUE",ultimate:"JARDIM DAS SOMBRAS QUIMÉRICAS"},
+    nobara:{light:"MARTELO",heavy:"RESSONÂNCIA",special:"HAIRPIN",ultimate:"RESSONÂNCIA: BONECO DE PALHA"},
+    sukuna:{light:"GOLPE",heavy:"CLIVAR",special:"DESMANTELAR",ultimate:"SANTUÁRIO MALEVOLENTE"},
+    todo:{light:"SOCO",heavy:"GOLPE DE BOOGIE",special:"BOOGIE WOOGIE",ultimate:"BOOGIE WOOGIE: TROCA"}
+   };
+   setMessage((blackFlash?"BLACK FLASH! ":moveNames[a.data.id]?.[type]||"TÉCNICA")+"  •  "+dealt);
+  }
   if(target.hp<=0)endFight(a===game.p?"VITÓRIA!":"DERROTA!");
  }else if(a===game.p&&type!=="light")setMessage("GOLPE NÃO ALCANÇOU");
 }
@@ -189,9 +203,41 @@ function drawFighter(a){
  ctx.fillStyle="#27202a";ctx.beginPath();ctx.ellipse(-9,-198,5,2,0,0,Math.PI*2);ctx.ellipse(9,-198,5,2,0,0,Math.PI*2);ctx.fill();
  ctx.fillStyle=isGojo?"#74d9f0":isSukuna?"#d84c67":"#d5c8af";ctx.beginPath();ctx.arc(-8,-198,2.2,0,Math.PI*2);ctx.arc(8,-198,2.2,0,Math.PI*2);ctx.fill();
  ctx.strokeStyle="#694b50";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-6,-184);ctx.quadraticCurveTo(0,-181,6,-184);ctx.stroke();
- if(isGojo){ctx.fillStyle="#f0eefb";ctx.fillRect(-21,-213,42,7);ctx.fillStyle="#78d9f0";ctx.fillRect(-13,-210,10,3);ctx.fillRect(4,-210,10,3);}
- if(isSukuna){ctx.strokeStyle="#4d172d";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-18,-205);ctx.lineTo(-8,-201);ctx.moveTo(18,-205);ctx.lineTo(8,-201);ctx.moveTo(-14,-185);ctx.lineTo(-5,-180);ctx.moveTo(14,-185);ctx.lineTo(5,-180);ctx.stroke();}
- if(isNobara){ctx.fillStyle="#b87548";ctx.beginPath();ctx.arc(0,-221,5,0,Math.PI*2);ctx.fill();}
+ if(isGojo){
+  // Gojo's recognizable black blindfold and pale spiky hair
+  ctx.fillStyle="#090b16";ctx.beginPath();ctx.roundRect(-24,-207,48,12,5);ctx.fill();
+  ctx.strokeStyle="#55536b";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-20,-201);ctx.lineTo(20,-201);ctx.stroke();
+  ctx.fillStyle="#f8f7ff";ctx.beginPath();ctx.moveTo(-20,-220);ctx.lineTo(-31,-239);ctx.lineTo(-11,-226);ctx.lineTo(-4,-248);ctx.lineTo(7,-225);ctx.lineTo(20,-243);ctx.lineTo(27,-216);ctx.fill();
+ }
+ if(isSukuna){
+  // Sukuna's distinctive facial curse markings
+  ctx.strokeStyle="#641c39";ctx.lineWidth=2.7;ctx.lineCap="round";ctx.beginPath();
+  ctx.moveTo(-19,-207);ctx.lineTo(-9,-202);ctx.moveTo(19,-207);ctx.lineTo(9,-202);
+  ctx.moveTo(-18,-193);ctx.lineTo(-10,-188);ctx.moveTo(18,-193);ctx.lineTo(10,-188);
+  ctx.moveTo(-14,-180);ctx.lineTo(-5,-176);ctx.moveTo(14,-180);ctx.lineTo(5,-176);ctx.stroke();
+  ctx.strokeStyle="#8d294b";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-18,-128);ctx.lineTo(-7,-118);ctx.moveTo(18,-128);ctx.lineTo(7,-118);ctx.stroke();
+ }
+ if(isNobara){
+  // Auburn bob, side fringe and small gold hair clip
+  ctx.fillStyle="#d08b45";ctx.beginPath();ctx.arc(18,-216,4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#9a563b";ctx.beginPath();ctx.arc(-20,-199,6,0,Math.PI*2);ctx.arc(20,-199,6,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#e5b45f";ctx.fillRect(11,-221,9,3);
+ }
+ if(isYuji){
+  // Red hood visible behind the dark school uniform
+  ctx.fillStyle="#a83255";ctx.beginPath();ctx.moveTo(-25,-151);ctx.quadraticCurveTo(-37,-176,0,-184);ctx.quadraticCurveTo(37,-176,25,-151);ctx.fill();
+  ctx.fillStyle="#e6a0a0";ctx.beginPath();ctx.moveTo(-18,-220);ctx.lineTo(-27,-232);ctx.lineTo(-8,-225);ctx.lineTo(0,-238);ctx.lineTo(9,-224);ctx.lineTo(22,-232);ctx.lineTo(19,-211);ctx.fill();
+ }
+ if(isMegumi){
+  // Dark navy high collar and angular shadow-like spikes
+  ctx.fillStyle="#101a30";ctx.fillRect(-23,-151,46,8);
+  ctx.fillStyle="#171a27";ctx.beginPath();ctx.moveTo(-22,-218);ctx.lineTo(-31,-244);ctx.lineTo(-12,-227);ctx.lineTo(-5,-249);ctx.lineTo(5,-225);ctx.lineTo(18,-246);ctx.lineTo(17,-221);ctx.lineTo(30,-235);ctx.lineTo(22,-205);ctx.fill();
+ }
+ if(isTodo){
+  // Broad shoulders and characteristic tied-back dark hair
+  ctx.fillStyle="#302b34";ctx.beginPath();ctx.arc(0,-231,10,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#bd987b";ctx.fillRect(-23,-170,46,7);
+ }
  if(isTodo){ctx.fillStyle="#c69d78";ctx.fillRect(-20,-174,40,5);}
  // Signature energy motif above the shoulder
  if(a.action==="special"||a.action==="ultimate"){
