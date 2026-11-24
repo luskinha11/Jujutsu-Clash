@@ -293,3 +293,32 @@
  .detail-art{height:215px;margin-bottom:15px}
  .fighter-detail h3{font-size:34px}
 }
+
+/* Opening screen: original JJK-inspired title artwork and game wordmark */
+.home-screen{position:relative;isolation:isolate}
+.home-screen:before{content:"";position:absolute;z-index:-1;inset:-30px -5vw;background:radial-gradient(ellipse at 76% 48%,#6829a52b,transparent 39%),radial-gradient(ellipse at 18% 78%,#3b1b6520,transparent 35%);pointer-events:none}
+.hero-copy .eyebrow{color:#c6a5ff;letter-spacing:2.5px}
+.hero-copy h1{max-width:660px;text-shadow:0 8px 34px #0008}
+.hero-copy h1 em{background:linear-gradient(100deg,#a879ff,#e2a3ff 55%,#9a63f4);background-clip:text;-webkit-background-clip:text;color:transparent}
+.hero-art{height:510px;border:1px solid #a879ff20;border-radius:18px;background:radial-gradient(ellipse at 50% 46%,#512b7933,transparent 55%),linear-gradient(145deg,#171124aa,#090711bb 70%);box-shadow:inset 0 1px #ffffff0a,0 28px 80px #0005}
+.hero-backdrop{position:absolute;inset:0;background:linear-gradient(120deg,transparent 20%,#a46aff08 50%,transparent 80%),repeating-linear-gradient(135deg,transparent 0 42px,#ffffff04 43px 44px);mask-image:linear-gradient(transparent,#000 20%,#000 80%,transparent)}
+.hero-art .orbit-one{width:420px;height:420px;border-color:#b78aff35;box-shadow:0 0 55px #8d4be51a,inset 0 0 55px #8d4be510}
+.hero-art .orbit-two{width:340px;height:470px;border-color:#e3a4ff2a}
+.hero-sigil{font-size:330px;color:#c49aff0b;text-shadow:0 0 60px #9d60ff20;transform:rotate(-10deg)}
+.hero-logo{position:relative;z-index:2;width:min(92%,510px);text-align:center;transform:translateY(-5px);filter:drop-shadow(0 12px 24px #000b)}
+.logo-kanji{font-family:serif;font-weight:900;font-size:clamp(48px,6vw,76px);line-height:1;letter-spacing:7px;color:#f5efff;text-shadow:3px 3px 0 #6c42a5,-1px -1px 0 #fff,0 0 24px #bd8aff88}
+.logo-rule{display:flex;align-items:center;justify-content:center;gap:12px;margin:14px auto 12px;color:#c9a9ff;font-size:9px;font-weight:900;letter-spacing:4px}
+.logo-rule i{height:1px;width:54px;background:linear-gradient(90deg,transparent,#bb8cff)}
+.logo-rule i:last-child{transform:scaleX(-1)}
+.logo-main{font:900 clamp(32px,4vw,49px)/.95 'Barlow Condensed',sans-serif;letter-spacing:2px;color:#fff;text-shadow:0 3px 0 #5d397e,0 8px 24px #000}
+.logo-main b{color:#c18cff}
+.logo-sub{margin-top:12px;color:#a99bbd;font-size:8px;letter-spacing:4px;font-weight:800}
+.hero-seal{position:absolute;z-index:2;top:34px;right:35px;width:64px;height:64px;border:1px solid #c39bff88;border-radius:50%;display:grid;place-content:center;text-align:center;color:#e8d8ff;font:900 16px serif;transform:rotate(12deg);box-shadow:0 0 24px #a66bff22}
+.hero-seal span{font:700 5px Inter,sans-serif;letter-spacing:1px;margin-top:3px}
+.hero-energy{position:absolute;width:210px;height:3px;z-index:1;background:linear-gradient(90deg,transparent,#b887ff,transparent);filter:drop-shadow(0 0 9px #b887ff);opacity:.65}
+.energy-a{top:34%;left:3%;transform:rotate(-34deg)}
+.energy-b{bottom:29%;right:2%;transform:rotate(-34deg)}
+.hero-label{z-index:3;right:24px;bottom:20px;color:#e1d1ff;font-size:10px;letter-spacing:2.5px}
+.hero-label span{color:#bd8cff}
+@media(max-width:850px){.home-screen{grid-template-columns:1fr;gap:0}.hero-art{height:390px;grid-row:1}.hero-copy{padding:25px 0 38px}.hero-copy h1{font-size:clamp(44px,9vw,70px)}.logo-kanji{font-size:58px}}
+@media(max-width:520px){.hero-art{height:310px;border-radius:12px}.hero-seal{top:15px;right:15px;width:52px;height:52px}.hero-sigil{font-size:230px}.logo-kanji{font-size:45px}.logo-main{font-size:32px}.logo-sub{font-size:6px;letter-spacing:2.5px}.hero-copy h1{font-size:44px}.hero-stats{gap:24px;margin-top:35px}}
