@@ -121,7 +121,7 @@ function resolveAttack(a){
  if(a.data.id==="megumi"&&type==="special"){spawn(a.x+a.face*65,290,"#16182c",24);}
  if(a.data.id==="todo"&&type==="special"){spawn(a.x,235,"#d5b4ff",16);}
  if(a.data.id==="sukuna"&&type==="ultimate"){spawn(target.x,240,"#ef4c78",40);}
- if(type==="ultimate"){
+ if(type==="ultimate"&&a.data.id!=="gojo"){
   const finishers={
    megumi:{name:"EXPANSÃO DE DOMÍNIO: JARDIM DAS SOMBRAS QUIMÉRICAS",kind:"shadows",life:210},
    sukuna:{name:"EXPANSÃO DE DOMÍNIO: SANTUÁRIO MALEVOLENTE",kind:"shrine",life:230}
@@ -218,7 +218,7 @@ function update(dt){
  game.projectiles=game.projectiles.filter(q=>q.life>0);
  game.projectiles.forEach(q=>{
   q.trail.push({x:q.x,y:q.y});if(q.trail.length>9)q.trail.shift();
-  q.x+=q.vx*dt;q.life-=dt;q.angle+=.18*dt;
+  q.x+=q.vx*dt;q.y+=(q.vy||0)*dt;q.life-=dt;q.angle+=.18*dt;
   const victim=q.target;
   if(victim&&Math.abs(q.x-victim.x)<(q.hitRadius||34)&&Math.abs(q.y-(370+victim.y-125))<(q.kind==="purple"?150:105)){
    const blocked=victim.blocking&&victim.face===-Math.sign(q.vx);
