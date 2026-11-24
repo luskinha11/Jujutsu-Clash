@@ -90,7 +90,7 @@ function updateFighter(a,other,dt,isPlayer){
       if(dist>185&&dist<365&&a.energy>=35&&roll<.48){attack(a,other,"special");}
       else if(dist>185){a.vx=a.face*(2.6+a.data.speed*.012);a.action="walk";}
       else if(roll<.17){a.blocking=true;a.action="block";a.actionTime=11;a.vx=0;}
-      else{attack(a,other,roll<.30&&a.energy>=70?"ultimate":roll<.57&&a.energy>=35?"special":roll<.78?"heavy":"light");}
+      else{attack(a,other,roll<.30&&a.energy>=(a.data.id==="gojo"?100:70)?"ultimate":roll<.57&&a.energy>=35?"special":roll<.78?"heavy":"light");}
       game.aiWait=16+Math.random()*23;
      }
     }
