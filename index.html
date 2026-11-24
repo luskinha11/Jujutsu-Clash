@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jujutsu Clash</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div id="menu">
+        <h1>JUJUTSU <span>CLASH</span></h1>
+        <p>O combate dos feiticeiros começou.</p>
+        <button id="playButton">JOGAR</button>
+    </div>
+
+    <div id="gameScreen" class="hidden">
+        <div class="hud">
+            <div>
+                <strong>YUJI ITADORI</strong>
+                <div class="bar"><div id="playerHealth"></div></div>
+                <small>ENERGIA AMALDIÇOADA</small>
+                <div class="bar energy"><div id="playerEnergy"></div></div>
+            </div>
+
+            <div id="timer">60</div>
+
+            <div>
+                <strong>INIMIGO</strong>
+                <div class="bar"><div id="enemyHealth"></div></div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+        <div class="controls">
+            A/D: Mover | W: Pular | J: Soco | K: Chute | L: Técnica
+        </div>
+    </div>
+
+    <script src="js/game.js"></script>
+</body>
+</html>
