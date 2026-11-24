@@ -61,9 +61,9 @@ function updateFighter(a,other,dt,isPlayer){
     if((input("w")||input("arrowup"))&&a.onGround){a.vy=-13.5;a.onGround=false;a.action="jump";spawn(a.x,374,"#cbb6ff",7);}
     if(input("mouseleft")||input("j"))attack(a,other,"light");
     else if(input("mouseright")||input("k"))attack(a,other,"heavy");
-    else if(input("l"))attack(a,other,"special");
-    else if(input("u"))attack(a,other,"ultimate");
-    else if(input("q"))attack(a,other,"domain");
+    else if(input("e"))attack(a,other,"special");
+    else if(input("f"))attack(a,other,"ultimate");
+    else if(input("space"))attack(a,other,"domain");
    }
    }
   }else{
@@ -505,7 +505,7 @@ function updateHud(){if(!game)return;$("pHealth").style.width=game.p.hp+"%";$("e
 function loop(t){if(!game)return;const dt=last?Math.min(2.2,(t-last)/16.67):1;last=t;update(dt);draw();if(!finished)raf=requestAnimationFrame(loop);}
 function pause(){if(!game||finished)return;paused=!paused;$("overlay").classList.toggle("hidden",!paused);$("overlayTitle").textContent="PAUSADO";$("overlayText").textContent="A batalha está em pausa.";$("resumeBtn").textContent="CONTINUAR";if(!paused){last=0;raf=requestAnimationFrame(loop);}else cancelAnimationFrame(raf);}
 $("startBtn").onclick=()=>{show("select");buildRoster();showDetail();};$("backHome").onclick=()=>show("home");$("howBtn").onclick=$("howBtn2").onclick=()=>show("how");$("closeHow").onclick=()=>show("home");$("fightBtn").onclick=startFight;$("pauseBtn").onclick=pause;$("resumeBtn").onclick=()=>{if(finished){show("select");buildRoster();showDetail();}else pause();};$("quitBtn").onclick=()=>{cancelAnimationFrame(raf);game=null;show("select");buildRoster();showDetail();};
-window.addEventListener("keydown",e=>{const k=e.key.toLowerCase();if([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(k))e.preventDefault();keys[k]=true;if(k==="escape")pause();});window.addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false;});
+window.addEventListener("keydown",e=>{const k=e.key===" "?"space":e.key.toLowerCase();if(["space","arrowup","arrowdown","arrowleft","arrowright"].includes(k))e.preventDefault();keys[k]=true;if(k==="escape")pause();});window.addEventListener("keyup",e=>{const k=e.key===" "?"space":e.key.toLowerCase();keys[k]=false;});
 canvas.addEventListener("mousedown",e=>{if(e.button===0)keys.mouseleft=true;if(e.button===2)keys.mouseright=true;});window.addEventListener("mouseup",e=>{if(e.button===0)keys.mouseleft=false;if(e.button===2)keys.mouseright=false;});canvas.addEventListener("contextmenu",e=>e.preventDefault());
 document.querySelectorAll(".mobile-controls button").forEach(b=>{const k=b.dataset.key;b.addEventListener("pointerdown",e=>{e.preventDefault();keys[k]=true;});["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false));});
 buildRoster();showDetail();show("home");
