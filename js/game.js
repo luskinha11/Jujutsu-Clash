@@ -15,7 +15,7 @@ const canvas=$("gameCanvas"),ctx=canvas.getContext("2d");
 function show(name){screens.forEach(s=>$(s).classList.toggle("hidden",s!==name));}
 function buildRoster(){const root=$("roster");root.innerHTML="";roster.forEach(f=>{const b=document.createElement("button");b.className="fighter-card"+(f.id===selected.id?" selected":"");b.innerHTML='<div class="portrait" style="--glow:'+f.glow+'"><img src="'+f.image+'" alt="'+f.name+'" loading="lazy" referrerpolicy="no-referrer"></div><strong>'+f.name+'</strong><small>'+f.role+'</small>';b.addEventListener("click",()=>{selected=f;buildRoster();showDetail();});root.appendChild(b);});}
 function showDetail(){$("fighterRole").textContent=selected.role;$("fighterName").textContent=selected.name;$("fighterDesc").textContent=selected.desc;$("detailArt").innerHTML='<img src="'+selected.image+'" alt="'+selected.name+'" referrerpolicy="no-referrer">';$("detailArt").style.background="radial-gradient(circle,"+selected.glow+"88,transparent 70%),#0d0b15";$("powerBar").style.width=selected.power+"%";$("speedBar").style.width=selected.speed+"%";$("techBar").style.width=selected.tech+"%";}
-function fighter(x,side,data){return{x,y:0,vx:0,vy:0,ground:0,onGround:true,hp:100,energy:25,side,data,face:side===1?1:-1,action:"idle",actionTime:0,attackCooldown:0,attackEvent:null,hitFlash:0,combo:0,comboTime:0,blocking:false,stun:0,walk:0,breath:Math.random()*6};}
+function fighter(x,side,data){return{x,y:0,vx:0,vy:0,ground:0,onGround:true,hp:100,energy:25,side,data,face:side===1?1:-1,action:"idle",actionTime:0,attackCooldown:0,attackEvent:null,hitFlash:0,combo:0,comboTime:0,blocking:false,stun:0,walk:0,breath:Math.random()*6,charging:false,chargePulse:0};}
 function startFight(){enemyChoice=selected.id==="sukuna"?roster[0]:roster[4];game={p:fighter(220,1,selected),e:fighter(740,-1,enemyChoice),time:99,particles:[],shake:0,hitstop:0,flash:0,frame:0,aiWait:35,message:"FIGHT!",messageTime:90,stage:Math.floor(Math.random()*3),domain:null,domainPulse:0,projectiles:[]};paused=false;finished=false;$("pName").textContent=selected.short;$("eName").textContent=enemyChoice.short;$("overlay").classList.add("hidden");$("battleMessage").textContent="FIGHT!";show("battle");updateHud();last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}
 function input(key){return !!keys[key];}
 function setMessage(t){game.message=t;game.messageTime=70;$("battleMessage").textContent=t;}
@@ -44,6 +44,12 @@ function updateFighter(a,other,dt,isPlayer){
  }else if(a.action!=="jump"&&a.action!=="dash"){
   if(isPlayer){
    const left=input("a")||input("arrowleft"),right=input("d")||input("arrowright");
+   a.charging=input("c")&&a.energy<100;
+   if(a.charging){
+    a.energy=Math.min(100,a.energy+.42*dt);
+    a.vx*=.55;a.action="charge";a.blocking=false;a.chargePulse+=.22*dt;
+    if(Math.random()<.24)spawn(a.x+(Math.random()-.5)*42,370+a.y-95-Math.random()*95,a.data.color,1);
+   }else{
    a.blocking=input("s")||input("arrowdown");
    if(a.blocking){a.action="block";a.vx*=.35;}
    else{
@@ -57,6 +63,7 @@ function updateFighter(a,other,dt,isPlayer){
     else if(input("k"))attack(a,other,"heavy");
     else if(input("l"))attack(a,other,"special");
     else if(input("u"))attack(a,other,"ultimate");
+   }
    }
   }else{
    game.aiWait-=dt;
@@ -74,7 +81,7 @@ function updateFighter(a,other,dt,isPlayer){
  a.y+=a.vy*dt;a.vy+=.72*dt;
  if(a.y>=0){a.y=0;a.vy=0;if(!a.onGround)spawn(a.x,376,"#9880c7",4);a.onGround=true;if(a.action==="jump")a.action="idle";}
  a.x=Math.max(58,Math.min(902,a.x));
- a.energy=Math.min(100,a.energy+.035*dt);
+ if(!a.charging)a.energy=Math.min(100,a.energy+.035*dt);
  if(a.comboTime>0)a.comboTime-=dt;else a.combo=0;
  a.breath+=.06*dt;
 }
@@ -269,6 +276,18 @@ function drawFighter(a){
   ctx.fillStyle="#bd987b";ctx.fillRect(-23,-170,46,7);
  }
  if(isTodo){ctx.fillStyle="#c69d78";ctx.fillRect(-20,-174,40,5);}
+ // Sustained cursed-energy charging aura, with expanding rings and rising sparks
+ if(a.charging){
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  const pulse=1+Math.sin(a.chargePulse)*.12;
+  const aura=ctx.createRadialGradient(0,-115,12,0,-115,82*pulse);
+  aura.addColorStop(0,a.data.color+"66");aura.addColorStop(.55,a.data.color+"22");aura.addColorStop(1,a.data.color+"00");
+  ctx.fillStyle=aura;ctx.beginPath();ctx.ellipse(0,-116,58*pulse,108*pulse,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=a.data.color;ctx.globalAlpha=.55;ctx.lineWidth=2;
+  for(let ring=0;ring<3;ring++){ctx.beginPath();ctx.ellipse(0,-112,34+ring*13+Math.sin(a.chargePulse+ring)*4,58+ring*16,game.frame*.018*(ring%2?1:-1),0,Math.PI*2);ctx.stroke();}
+  ctx.globalAlpha=.95;ctx.fillStyle="#fff";ctx.font="900 12px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText("CARREGANDO",0,-258);
+  ctx.restore();
+ }
  // Layered cursed-energy charge: anticipation, rotating seals and character-colored sparks
  if(a.action==="special"||a.action==="ultimate"){
   const ultimate=a.action==="ultimate",phase=1-a.actionTime/(ultimate?52:36);
