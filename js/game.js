@@ -16,7 +16,7 @@ function show(name){screens.forEach(s=>$(s).classList.toggle("hidden",s!==name))
 function buildRoster(){const root=$("roster");root.innerHTML="";roster.forEach(f=>{const b=document.createElement("button");b.className="fighter-card"+(f.id===selected.id?" selected":"");b.innerHTML='<div class="portrait" style="--glow:'+f.glow+'"><img src="'+f.image+'" alt="'+f.name+'" loading="lazy" referrerpolicy="no-referrer"></div><strong>'+f.name+'</strong><small>'+f.role+'</small>';b.addEventListener("click",()=>{selected=f;buildRoster();showDetail();});root.appendChild(b);});}
 function showDetail(){$("fighterRole").textContent=selected.role;$("fighterName").textContent=selected.name;$("fighterDesc").textContent=selected.desc;$("detailArt").innerHTML='<img src="'+selected.image+'" alt="'+selected.name+'" referrerpolicy="no-referrer">';$("detailArt").style.background="radial-gradient(circle,"+selected.glow+"88,transparent 70%),#0d0b15";$("powerBar").style.width=selected.power+"%";$("speedBar").style.width=selected.speed+"%";$("techBar").style.width=selected.tech+"%";}
 function fighter(x,side,data){return{x,y:0,vx:0,vy:0,ground:0,onGround:true,hp:100,energy:25,side,data,face:side===1?1:-1,action:"idle",actionTime:0,attackCooldown:0,attackEvent:null,hitFlash:0,combo:0,comboTime:0,blocking:false,stun:0,walk:0,breath:Math.random()*6};}
-function startFight(){enemyChoice=selected.id==="sukuna"?roster[0]:roster[4];game={p:fighter(220,1,selected),e:fighter(740,-1,enemyChoice),time:99,particles:[],shake:0,hitstop:0,flash:0,frame:0,aiWait:35,message:"FIGHT!",messageTime:90,stage:Math.floor(Math.random()*3)};paused=false;finished=false;$("pName").textContent=selected.short;$("eName").textContent=enemyChoice.short;$("overlay").classList.add("hidden");$("battleMessage").textContent="FIGHT!";show("battle");updateHud();last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}
+function startFight(){enemyChoice=selected.id==="sukuna"?roster[0]:roster[4];game={p:fighter(220,1,selected),e:fighter(740,-1,enemyChoice),time:99,particles:[],shake:0,hitstop:0,flash:0,frame:0,aiWait:35,message:"FIGHT!",messageTime:90,stage:Math.floor(Math.random()*3),domain:null,domainPulse:0};paused=false;finished=false;$("pName").textContent=selected.short;$("eName").textContent=enemyChoice.short;$("overlay").classList.add("hidden");$("battleMessage").textContent="FIGHT!";show("battle");updateHud();last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}
 function input(key){return !!keys[key];}
 function setMessage(t){game.message=t;game.messageTime=70;$("battleMessage").textContent=t;}
 function spawn(x,y,color,count=10){for(let i=0;i<count;i++)game.particles.push({x,y,vx:(Math.random()-.5)*8,vy:(Math.random()-.7)*8,life:25+Math.random()*20,color,size:2+Math.random()*5});}
@@ -81,7 +81,20 @@ function resolveAttack(a){
  const ev=a.attackEvent;if(!ev||ev.resolved||game.frame<ev.resolveAt)return;
  ev.resolved=true;const target=ev.target,type=ev.type;
  const range=type==="ultimate"?350:type==="special"?260:type==="heavy"?130:98;
- const damage=type==="ultimate"?Math.round(34+a.data.tech*.16):type==="special"?Math.round(18+a.data.tech*.1):type==="heavy"?Math.round(13+a.data.power*.065):Math.round(8+a.data.speed*.025);
+ let damage=type==="ultimate"?Math.round(38+a.data.tech*.19):type==="special"?Math.round(21+a.data.tech*.12):type==="heavy"?Math.round(15+a.data.power*.07):Math.round(9+a.data.speed*.03);
+ let blackFlash=false;
+ if(a.data.id==="yuji"&&type!=="ultimate"&&Math.random()<.19){damage=Math.round(damage*2.15);blackFlash=true;game.flash=14;game.shake=12;spawn(a.x+a.face*55,225,"#ffdf9b",28);}
+ if(a.data.id==="sukuna"&&type==="special")damage=Math.round(damage*1.18);
+ if(a.data.id==="nobara"&&type==="special")damage=Math.round(damage*1.22);
+ if(a.data.id==="todo"&&type==="special"){target.x=Math.max(70,Math.min(890,a.x+a.face*105));target.vx=a.face*2;spawn(target.x,260,"#d8a9ff",22);}
+ if(a.data.id==="megumi"&&type==="special"){spawn(a.x+a.face*80,270,"#8294d8",28);target.stun+=5;}
+ if(a.data.id==="gojo"&&type==="special"){target.vx=a.face*10;spawn(target.x,240,"#78d9f0",20);}
+ if(a.data.id==="sukuna"&&type==="ultimate"){spawn(target.x,240,"#ef4c78",40);}
+ if(type==="ultimate"){
+  const names={gojo:"EXPANSÃO DE DOMÍNIO: VAZIO ILIMITADO",yuji:"BLACK FLASH: IMPACTO FINAL",megumi:"JARDIM DAS SOMBRAS QUIMÉRICAS",nobara:"RESSONÂNCIA: RUPTURA",sukuna:"SANTUÁRIO MALEVOLENTE",todo:"BOOGIE WOOGIE: TROCA ABSOLUTA"};
+  game.domain={name:names[a.data.id]||"TÉCNICA SUPREMA",color:a.data.color,life:190,owner:a.side};
+  game.domainPulse=1;
+ }
  const inFront=Math.sign(target.x-a.x)===a.face;
  if(Math.abs(target.x-a.x)<=range&&inFront&&target.hp>0){
   const blocked=target.blocking&&target.face===-a.face;
@@ -97,14 +110,14 @@ function resolveAttack(a){
   if(type==="special"||type==="ultimate"){
    for(let i=0;i<3;i++)game.particles.push({x:a.x+a.face*(45+i*22),y:225-i*24,vx:a.face*(3+i),vy:(i-1)*1.7,life:28,color:a.data.color,size:16+i*8,orb:true});
   }
-  if(a===game.p)setMessage((type==="ultimate"?"TÉCNICA SUPREMA":type==="special"?"TÉCNICA AMALDIÇOADA":"ACERTO")+"  •  "+dealt);
+  if(a===game.p)setMessage((blackFlash?"BLACK FLASH! ":type==="ultimate"?(game.domain?.name||"EXPANSÃO DE DOMÍNIO"):type==="special"?a.data.special.toUpperCase():"ACERTO")+"  •  "+dealt);
   if(target.hp<=0)endFight(a===game.p?"VITÓRIA!":"DERROTA!");
  }else if(a===game.p&&type!=="light")setMessage("GOLPE NÃO ALCANÇOU");
 }
 function update(dt){
  if(!game||paused||finished)return;
  if(game.hitstop>0){game.hitstop-=dt;return;}
- game.frame+=dt;game.time=Math.max(0,game.time-dt/60);
+ game.frame+=dt;if(game.domain){game.domain.life-=dt;if(game.domain.life<=0)game.domain=null;}game.time=Math.max(0,game.time-dt/60);
  if(game.time<=0){endFight(game.p.hp>=game.e.hp?"TEMPO ESGOTADO: VITÓRIA":"TEMPO ESGOTADO: DERROTA");return;}
  updateFighter(game.p,game.e,dt,true);updateFighter(game.e,game.p,dt,false);
  resolveAttack(game.p);resolveAttack(game.e);
@@ -201,6 +214,18 @@ function draw(){
  ctx.fillStyle="#ffffff16";for(let i=0;i<65;i++){const px=(i*137+game.frame*.18)%960,py=(i*71)%325;ctx.fillRect(px,py,1.5,1.5);}
  // skyline / temple silhouettes
  for(let layer=0;layer<3;layer++){ctx.fillStyle=layer===0?"#080b19aa":layer===1?"#111224bb":"#171326";const base=315+layer*19;for(let i=0;i<11;i++){const bx=i*105-20+layer*15,bw=55+(i%3)*12,bh=85+(i*37%105);ctx.fillRect(bx,base-bh,bw,bh);ctx.fillRect(bx-8,base-bh-7,bw+16,7);if(i%3===0){ctx.fillRect(bx+bw/2-3,base-bh-26,6,20);ctx.beginPath();ctx.moveTo(bx-15,base-bh-7);ctx.lineTo(bx+bw/2,base-bh-20);ctx.lineTo(bx+bw+15,base-bh-7);ctx.fill();}}}
+ // Domain expansion atmosphere
+ if(game.domain){
+  const d=game.domain;const pulse=1+Math.sin(game.frame*.12)*.035;
+  ctx.save();ctx.globalCompositeOperation="screen";ctx.globalAlpha=Math.min(.28,d.life/45);
+  const dome=ctx.createRadialGradient(480,260,30,480,260,510);
+  dome.addColorStop(0,d.color+"88");dome.addColorStop(1,d.color+"00");
+  ctx.fillStyle=dome;ctx.fillRect(0,0,w,h);ctx.restore();
+  ctx.save();ctx.translate(480,260);ctx.scale(pulse,1);ctx.strokeStyle=d.color+"88";ctx.lineWidth=3;ctx.setLineDash([14,9]);
+  for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(0,0,150+i*75,95+i*38,game.frame*.004*(i%2?1:-1),0,Math.PI*2);ctx.stroke();}
+  ctx.setLineDash([]);ctx.restore();
+  ctx.textAlign="center";ctx.font="900 24px 'Barlow Condensed',sans-serif";ctx.fillStyle="#fff";ctx.shadowColor=d.color;ctx.shadowBlur=22;ctx.fillText(d.name,480,142);ctx.shadowBlur=0;
+ }
  // large torii-inspired frame and stage banners
  ctx.globalAlpha=.38;ctx.fillStyle=stages[2];ctx.fillRect(85,165,13,185);ctx.fillRect(862,150,13,200);ctx.fillRect(65,157,830,12);ctx.fillRect(120,172,720,5);ctx.globalAlpha=1;
  ctx.strokeStyle="#d5c4ff18";ctx.lineWidth=1;for(let i=0;i<12;i++){ctx.beginPath();ctx.moveTo(40+i*85,340);ctx.lineTo(480+(i-6)*18,390);ctx.stroke();}
