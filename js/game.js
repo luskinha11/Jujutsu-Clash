@@ -123,7 +123,6 @@ function resolveAttack(a){
  if(a.data.id==="sukuna"&&type==="ultimate"){spawn(target.x,240,"#ef4c78",40);}
  if(type==="ultimate"){
   const finishers={
-   gojo:{name:"EXPANSÃO DE DOMÍNIO: VAZIO ILIMITADO",kind:"void",life:190},
    megumi:{name:"EXPANSÃO DE DOMÍNIO: JARDIM DAS SOMBRAS QUIMÉRICAS",kind:"shadows",life:210},
    sukuna:{name:"EXPANSÃO DE DOMÍNIO: SANTUÁRIO MALEVOLENTE",kind:"shrine",life:230}
   };
@@ -139,19 +138,35 @@ function resolveAttack(a){
    game.domain={name:names[a.data.id],kind:"finisher",color:a.data.color,life:95,owner:a.side,target,tick:0,age:0};
   }
  }
- if(type==="special"){
+ const rangedMove=type==="special"||(a.data.id==="gojo"&&(type==="heavy"||type==="ultimate"))||(a.data.id==="megumi"&&type==="heavy")||(a.data.id==="nobara"&&type==="heavy");
+ if(rangedMove){
   const shots={
-   gojo:{kind:"blue",speed:10.5,damage:Math.round(damage*1.08),size:24,life:95},
-   yuji:{kind:"shock",speed:12,damage:Math.round(damage*.95),size:19,life:78},
-   megumi:{kind:"nue",speed:8.5,damage:Math.round(damage*1.12),size:25,life:90},
-   nobara:{kind:"nail",speed:13.5,damage:Math.round(damage*1.08),size:9,life:90},
-   sukuna:{kind:"slash",speed:14,damage:Math.round(damage*1.16),size:30,life:85},
-   todo:{kind:"clap",speed:11,damage:Math.round(damage*.9),size:22,life:80}
+   gojo:{
+    heavy:{kind:"blue",speed:11,damage:Math.round(damage*1.2),size:30,life:100,color:"#66dfff"},
+    special:{kind:"red",speed:12.5,damage:Math.round(damage*1.35),size:38,life:95,color:"#ff536b"},
+    ultimate:{kind:"purple",speed:8.2,damage:Math.round(damage*1.8),size:82,life:125,color:"#bd63ff"}
+   },
+   yuji:{special:{kind:"shock",speed:12,damage:Math.round(damage*.95),size:19,life:78}},
+   megumi:{
+    heavy:{kind:"divine-dog",speed:13.5,damage:Math.round(damage*1.25),size:27,life:78,color:"#9aa8d9"},
+    special:{kind:"nue",speed:9,damage:Math.round(damage*1.3),size:32,life:100,color:"#a9c9ff"}
+   },
+   nobara:{
+    heavy:{kind:"nail-burst",speed:14,damage:Math.round(damage*1.12),size:14,life:90,color:"#f0bd79"},
+    special:{kind:"nail",speed:13.5,damage:Math.round(damage*1.2),size:12,life:90,color:"#f0bd79"}
+   },
+   sukuna:{special:{kind:"slash",speed:14,damage:Math.round(damage*1.3),size:34,life:85,color:"#ff496c"}},
+   todo:{special:{kind:"clap",speed:11,damage:Math.round(damage*.9),size:22,life:80,color:"#d5aaff"}}
   };
-  const shot=shots[a.data.id]||shots.yuji;
-  game.projectiles.push({x:a.x+a.face*48,y:238+a.y,vx:a.face*shot.speed,life:shot.life,maxLife:shot.life,owner:a.side,target,color:a.data.color,...shot,angle:0,trail:[]});
-  spawn(a.x+a.face*48,238,a.data.color,18);
-  if(a===game.p)setMessage(({gojo:"AZUL: LAPSE",yuji:"PUNHO DIVERGENTE",megumi:"NUE",nobara:"HAIRPIN",sukuna:"DESMANTELAR",todo:"BOOGIE WOOGIE"})[a.data.id]);
+  const shot=shots[a.data.id]?.[type]||shots.yuji.special;
+  const count=shot.kind==="nail-burst"?3:1;
+  for(let i=0;i<count;i++){
+   const spread=count===1?0:(i-1)*.13;
+   game.projectiles.push({x:a.x+a.face*48,y:238+a.y+spread*95,vx:a.face*shot.speed,vy:spread*shot.speed,life:shot.life,maxLife:shot.life,owner:a.side,target,color:shot.color||a.data.color,...shot,angle:0,trail:[],hitRadius:shot.kind==="purple"?82:shot.kind==="divine-dog"?43:shot.kind==="nue"?38:34});
+  }
+  spawn(a.x+a.face*48,238,shot.color||a.data.color,shot.kind==="purple"?60:24);
+  if(shot.kind==="purple"){game.shake=22;game.flash=18;setMessage("VAZIO ROXO: HOLLOW PURPLE");}
+  else if(a===game.p)setMessage(({gojo:{heavy:"AZUL: LAPSE",special:"REVERSÃO: VERMELHO"},yuji:{special:"PUNHO DIVERGENTE"},megumi:{heavy:"CÃES DIVINOS: INVOCAR",special:"NUE: INVOCAR"},nobara:{heavy:"CHUVA DE PREGOS",special:"HAIRPIN"},sukuna:{special:"DESMANTELAR"},todo:{special:"BOOGIE WOOGIE"}})[a.data.id]?.[type]||"TÉCNICA");
   return;
  }
  const inFront=Math.sign(target.x-a.x)===a.face;
@@ -171,7 +186,7 @@ function resolveAttack(a){
   }
   if(a===game.p){
    const moveNames={
-    gojo:{light:"SOCO",heavy:"AZUL: LAPSE",special:"AZUL: LAPSE",ultimate:"VAZIO ILIMITADO"},
+    gojo:{light:"SOCO",heavy:"AZUL: LAPSE",special:"REVERSÃO: VERMELHO",ultimate:"VAZIO ROXO: HOLLOW PURPLE"},
     yuji:{light:"SOCO DE ENERGIA AMALDIÇOADA",heavy:"PUNHO DIVERGENTE",special:"PUNHO DIVERGENTE",ultimate:"BLACK FLASH"},
     megumi:{light:"COMBATE CORPO A CORPO",heavy:"CÃES DIVINOS",special:"NUE",ultimate:"JARDIM DAS SOMBRAS QUIMÉRICAS"},
     nobara:{light:"MARTELO",heavy:"RESSONÂNCIA",special:"HAIRPIN",ultimate:"RESSONÂNCIA: BONECO DE PALHA"},
@@ -205,11 +220,12 @@ function update(dt){
   q.trail.push({x:q.x,y:q.y});if(q.trail.length>9)q.trail.shift();
   q.x+=q.vx*dt;q.life-=dt;q.angle+=.18*dt;
   const victim=q.target;
-  if(victim&&Math.abs(q.x-victim.x)<34&&Math.abs(q.y-(370+victim.y-125))<105){
+  if(victim&&Math.abs(q.x-victim.x)<(q.hitRadius||34)&&Math.abs(q.y-(370+victim.y-125))<(q.kind==="purple"?150:105)){
    const blocked=victim.blocking&&victim.face===-Math.sign(q.vx);
    const dealt=Math.max(2,Math.round(q.damage*(blocked?.2:1)));
-   victim.hp=Math.max(0,victim.hp-dealt);victim.stun=blocked?4:12;victim.action=blocked?"block":"hurt";victim.actionTime=10;victim.vx=Math.sign(q.vx)*(blocked?2:7);victim.hitFlash=10;
-   spawn(victim.x,245,q.color,blocked?8:20);game.shake=blocked?3:7;game.hitstop=3;q.life=0;
+   victim.hp=Math.max(0,victim.hp-dealt);victim.stun=blocked?4:q.kind==="purple"?34: q.kind==="divine-dog"||q.kind==="nue"?19:12;victim.action=blocked?"block":"hurt";victim.actionTime=10;victim.vx=Math.sign(q.vx)*(blocked?2:q.kind==="purple"?15:7);victim.hitFlash=10;
+   spawn(victim.x,245,q.color,blocked?8:q.kind==="purple"?70:24);game.shake=blocked?3:q.kind==="purple"?25:7;game.hitstop=q.kind==="purple"?11:3;q.life=0;
+   if(q.kind==="purple"){game.flash=20;for(let i=0;i<34;i++)spawn(victim.x+(Math.random()-.5)*150,210+Math.random()*150,"#c77aff",1);}
    if(victim.hp<=0)endFight(q.owner===1?"VITÓRIA!":"DERROTA!");
   }
  });
@@ -407,9 +423,29 @@ function draw(){
   }else if(q.kind==="blue"){
    const g=ctx.createRadialGradient(-5,-5,2,0,0,q.size);g.addColorStop(0,"#ffffff");g.addColorStop(.28,"#b9f5ff");g.addColorStop(1,"#397bff00");
    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,q.size,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#8beaff";ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,q.size*.72,0,Math.PI*2);ctx.stroke();
+  }else if(q.kind==="red"){
+   const g=ctx.createRadialGradient(0,0,2,0,0,q.size);g.addColorStop(0,"#fff");g.addColorStop(.25,"#ffb0b9");g.addColorStop(.65,"#ff345c");g.addColorStop(1,"#ff345c00");
+   ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,q.size,0,Math.PI*2);ctx.fill();
+   ctx.strokeStyle="#ff8b9f";ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,q.size*.78,game.frame*.12,game.frame*.12+Math.PI*1.6);ctx.stroke();
+  }else if(q.kind==="purple"){
+   ctx.shadowBlur=55;const g=ctx.createRadialGradient(-12,-10,4,0,0,q.size);g.addColorStop(0,"#ffffff");g.addColorStop(.18,"#f0d7ff");g.addColorStop(.48,"#bd63ff");g.addColorStop(.78,"#7024d6");g.addColorStop(1,"#3b087900");
+   ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,q.size,0,Math.PI*2);ctx.fill();
+   ctx.strokeStyle="#e8baff";ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,q.size*.78,game.frame*.08,game.frame*.08+Math.PI*1.65);ctx.stroke();
+   ctx.strokeStyle="#9d4cff";ctx.lineWidth=8;for(let i=0;i<4;i++){ctx.beginPath();ctx.ellipse(0,0,q.size*(.9+i*.13),q.size*(.35+i*.08),game.frame*.025+i,0,Math.PI*2);ctx.stroke();}
+  }else if(q.kind==="divine-dog"){
+   ctx.fillStyle="#111827";ctx.beginPath();ctx.ellipse(0,0,q.size*1.05,q.size*.52,0,0,Math.PI*2);ctx.fill();
+   ctx.beginPath();ctx.moveTo(-q.size*.55,-q.size*.18);ctx.lineTo(-q.size*.9,-q.size*.95);ctx.lineTo(-q.size*.15,-q.size*.55);ctx.lineTo(q.size*.1,-q.size*.95);ctx.lineTo(q.size*.45,-q.size*.2);ctx.fill();
+   ctx.fillStyle="#dce8ff";ctx.beginPath();ctx.arc(q.size*.35,-q.size*.12,3,0,Math.PI*2);ctx.fill();
+   ctx.strokeStyle="#8295d8";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,q.size*1.1,q.size*.58,0,0,Math.PI*2);ctx.stroke();
   }else if(q.kind==="nue"){
    ctx.beginPath();ctx.moveTo(-q.size,0);ctx.quadraticCurveTo(-8,-q.size*1.3,q.size,0);ctx.quadraticCurveTo(8,q.size*1.3,-q.size,0);ctx.fill();
    ctx.strokeStyle="#d9e7ff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-q.size*.65,-4);ctx.lineTo(q.size*.65,4);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(-q.size*.4,-q.size*.35);ctx.lineTo(-q.size*.85,-q.size*.95);ctx.lineTo(-q.size*.05,-q.size*.55);ctx.fill();
+   ctx.beginPath();ctx.moveTo(q.size*.35,-q.size*.35);ctx.lineTo(q.size*.8,-q.size*.95);ctx.lineTo(q.size*.05,-q.size*.55);ctx.fill();
+   ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(-5,-2,3,0,Math.PI*2);ctx.arc(6,-2,3,0,Math.PI*2);ctx.fill();
+  }else if(q.kind==="nail-burst"){
+   ctx.lineWidth=4;for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(-q.size*1.7,i*8);ctx.lineTo(q.size*1.4,i*8-3);ctx.stroke();}
+   ctx.fillStyle="#ffe0a3";ctx.beginPath();ctx.arc(-q.size,0,5,0,Math.PI*2);ctx.fill();
   }else if(q.kind==="clap"){
    ctx.lineWidth=3;for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(0,0,q.size*(.55+i*.35),-.75,.75);ctx.stroke();}
    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*2);ctx.fill();
