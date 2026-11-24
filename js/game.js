@@ -103,9 +103,22 @@ function resolveAttack(a){
  if(a.data.id==="todo"&&type==="special"){spawn(a.x,235,"#d5b4ff",16);}
  if(a.data.id==="sukuna"&&type==="ultimate"){spawn(target.x,240,"#ef4c78",40);}
  if(type==="ultimate"){
-  const names={gojo:"EXPANSÃO DE DOMÍNIO: VAZIO ILIMITADO",yuji:"BLACK FLASH",megumi:"JARDIM DAS SOMBRAS QUIMÉRICAS",nobara:"RESSONÂNCIA",sukuna:"SANTUÁRIO MALEVOLENTE",todo:"BOOGIE WOOGIE"};
-  game.domain={name:names[a.data.id]||"TÉCNICA SUPREMA",color:a.data.color,life:190,owner:a.side};
-  game.domainPulse=1;
+  const finishers={
+   gojo:{name:"EXPANSÃO DE DOMÍNIO: VAZIO ILIMITADO",kind:"void",life:190},
+   megumi:{name:"EXPANSÃO DE DOMÍNIO: JARDIM DAS SOMBRAS QUIMÉRICAS",kind:"shadows",life:210},
+   sukuna:{name:"EXPANSÃO DE DOMÍNIO: SANTUÁRIO MALEVOLENTE",kind:"shrine",life:230}
+  };
+  const domain=finishers[a.data.id];
+  if(domain){
+   game.domain={...domain,color:a.data.color,owner:a.side,target,life:domain.life,tick:0,age:0};
+   game.domainPulse=1;
+   if(domain.kind==="void"){target.stun=Math.max(target.stun,95);target.action="hurt";spawn(target.x,220,"#b7d9ff",38);game.flash=18;}
+   if(domain.kind==="shadows"){spawn(a.x,370,"#111326",46);target.stun=Math.max(target.stun,18);}
+   if(domain.kind==="shrine"){spawn(target.x,245,"#ef4c78",42);target.stun=Math.max(target.stun,12);}
+  }else{
+   const names={yuji:"BLACK FLASH: IMPACTO DA ALMA",nobara:"RESSONÂNCIA: BONECO DE PALHA",todo:"BOOGIE WOOGIE: TROCA E COMBO"};
+   game.domain={name:names[a.data.id],kind:"finisher",color:a.data.color,life:95,owner:a.side,target,tick:0,age:0};
+  }
  }
  if(type==="special"){
   const shots={
@@ -154,7 +167,17 @@ function resolveAttack(a){
 function update(dt){
  if(!game||paused||finished)return;
  if(game.hitstop>0){game.hitstop-=dt;return;}
- game.frame+=dt;if(game.domain){game.domain.life-=dt;if(game.domain.life<=0)game.domain=null;}game.time=Math.max(0,game.time-dt/60);
+ game.frame+=dt;if(game.domain){
+  const d=game.domain;d.life-=dt;d.age+=dt;d.tick-=dt;
+  if(d.life<=0)game.domain=null;
+  else if(d.target&&d.target.hp>0&&d.tick<=0){
+   if(d.kind==="shrine"&&d.age>8){const hit= Math.min(d.target.hp,4);d.target.hp-=hit;d.target.stun=Math.max(d.target.stun,3);spawn(d.target.x+(Math.random()-.5)*70,235+(Math.random()-.5)*90,"#ef4c78",5);game.shake=4;d.tick=13;}
+   if(d.kind==="shadows"&&d.age>12){const hit=Math.min(d.target.hp,5);d.target.hp-=hit;d.target.stun=Math.max(d.target.stun,5);spawn(d.target.x,250,"#7885d8",8);d.tick=25;}
+   if(d.kind==="void"&&d.age>28&&d.age<100){const hit=Math.min(d.target.hp,2);d.target.hp-=hit;d.tick=22;}
+   if(d.kind==="finisher"&&d.age>8){const hit=Math.min(d.target.hp,3);d.target.hp-=hit;spawn(d.target.x,245,d.color,6);d.tick=18;}
+   if(d.target.hp<=0)endFight(d.owner===1?"VITÓRIA!":"DERROTA!");
+  }
+ }game.time=Math.max(0,game.time-dt/60);
  if(game.time<=0){endFight(game.p.hp>=game.e.hp?"TEMPO ESGOTADO: VITÓRIA":"TEMPO ESGOTADO: DERROTA");return;}
  updateFighter(game.p,game.e,dt,true);updateFighter(game.e,game.p,dt,false);
  resolveAttack(game.p);resolveAttack(game.e);
@@ -320,17 +343,31 @@ function draw(){
  ctx.fillStyle="#ffffff16";for(let i=0;i<65;i++){const px=(i*137+game.frame*.18)%960,py=(i*71)%325;ctx.fillRect(px,py,1.5,1.5);}
  // skyline / temple silhouettes
  for(let layer=0;layer<3;layer++){ctx.fillStyle=layer===0?"#080b19aa":layer===1?"#111224bb":"#171326";const base=315+layer*19;for(let i=0;i<11;i++){const bx=i*105-20+layer*15,bw=55+(i%3)*12,bh=85+(i*37%105);ctx.fillRect(bx,base-bh,bw,bh);ctx.fillRect(bx-8,base-bh-7,bw+16,7);if(i%3===0){ctx.fillRect(bx+bw/2-3,base-bh-26,6,20);ctx.beginPath();ctx.moveTo(bx-15,base-bh-7);ctx.lineTo(bx+bw/2,base-bh-20);ctx.lineTo(bx+bw+15,base-bh-7);ctx.fill();}}}
- // Domain expansion atmosphere
+ // Character-specific domain visuals
  if(game.domain){
-  const d=game.domain;const pulse=1+Math.sin(game.frame*.12)*.035;
-  ctx.save();ctx.globalCompositeOperation="screen";ctx.globalAlpha=Math.min(.28,d.life/45);
-  const dome=ctx.createRadialGradient(480,260,30,480,260,510);
-  dome.addColorStop(0,d.color+"88");dome.addColorStop(1,d.color+"00");
-  ctx.fillStyle=dome;ctx.fillRect(0,0,w,h);ctx.restore();
-  ctx.save();ctx.translate(480,260);ctx.scale(pulse,1);ctx.strokeStyle=d.color+"88";ctx.lineWidth=3;ctx.setLineDash([14,9]);
-  for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(0,0,150+i*75,95+i*38,game.frame*.004*(i%2?1:-1),0,Math.PI*2);ctx.stroke();}
-  ctx.setLineDash([]);ctx.restore();
-  ctx.textAlign="center";ctx.font="900 24px 'Barlow Condensed',sans-serif";ctx.fillStyle="#fff";ctx.shadowColor=d.color;ctx.shadowBlur=22;ctx.fillText(d.name,480,142);ctx.shadowBlur=0;
+  const d=game.domain, pulse=1+Math.sin(game.frame*.16)*.045;
+  ctx.save();ctx.globalCompositeOperation="screen";
+  if(d.kind==="void"){
+   ctx.fillStyle=ctx.createRadialGradient(480,220,15,480,220,560);ctx.fillStyle.addColorStop?.(0,"#dcecffbb");
+  }
+  if(d.kind==="void"){
+   const g=ctx.createRadialGradient(480,230,10,480,230,600);g.addColorStop(0,"#dcecffaa");g.addColorStop(.35,"#6379c955");g.addColorStop(1,"#080817ee");ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+   for(let i=0;i<24;i++){const x=(i*83+game.frame*1.7)%960,y=(i*47+game.frame*.8)%380;ctx.fillStyle="#ffffffaa";ctx.beginPath();ctx.arc(x,y,1+(i%3),0,Math.PI*2);ctx.fill();}
+  }else if(d.kind==="shrine"){
+   ctx.fillStyle="#3b081dcc";ctx.fillRect(0,0,w,h);
+   ctx.strokeStyle="#f35c78aa";ctx.lineWidth=3;
+   for(let i=0;i<9;i++){const x=(i*127+game.frame*2)%1050-40;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x-85,390);ctx.stroke();}
+   ctx.fillStyle="#b92b4d55";ctx.fillRect(0,340,w,44);
+  }else if(d.kind==="shadows"){
+   ctx.fillStyle="#070916dd";ctx.fillRect(0,0,w,h);
+   for(let i=0;i<8;i++){const x=i*145-30+Math.sin(game.frame*.04+i)*22;ctx.fillStyle=i%2?"#242b54aa":"#11152fee";ctx.beginPath();ctx.moveTo(x,385);ctx.quadraticCurveTo(x-35,235,x+35,150+(i%3)*35);ctx.quadraticCurveTo(x+90,260,x+115,385);ctx.fill();}
+   ctx.strokeStyle="#8797e988";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(480,360,360*pulse,45,0,0,Math.PI*2);ctx.stroke();
+  }else{
+   ctx.fillStyle=d.color+"22";ctx.fillRect(0,0,w,h);
+   for(let i=0;i<5;i++){ctx.strokeStyle=d.color+"99";ctx.lineWidth=2;ctx.beginPath();ctx.arc(480,245,55+i*43+Math.sin(game.frame*.1+i)*8,0,Math.PI*2);ctx.stroke();}
+  }
+  ctx.restore();
+  ctx.textAlign="center";ctx.font="900 24px 'Barlow Condensed',sans-serif";ctx.fillStyle="#fff";ctx.shadowColor=d.color;ctx.shadowBlur=24;ctx.fillText(d.name,480,142);ctx.shadowBlur=0;
  }
  // large torii-inspired frame and stage banners
  ctx.globalAlpha=.38;ctx.fillStyle=stages[2];ctx.fillRect(85,165,13,185);ctx.fillRect(862,150,13,200);ctx.fillRect(65,157,830,12);ctx.fillRect(120,172,720,5);ctx.globalAlpha=1;
