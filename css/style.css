@@ -28,3 +28,62 @@
 .mobile-controls button:active{background:#7441bb;transform:scale(.96);box-shadow:0 0 18px #9b68ef66}
 .battle-bottom #battleMessage{font-weight:800;letter-spacing:.5px;color:#e5d5ff}
 @media(max-width:560px){.arena-wrap{border-radius:4px}.mobile-controls button{min-width:36px;padding:11px 10px}}
+
+
+/* Character select redesign: clearer portraits, stronger hierarchy and balanced detail panel */
+.select-screen{padding-top:38px}
+.select-screen .section-heading{margin-bottom:24px}
+.select-screen .section-heading h2{font-size:clamp(46px,5vw,66px);letter-spacing:-.8px}
+.select-layout{grid-template-columns:minmax(0,1.62fr) minmax(330px,.88fr);gap:22px;align-items:start}
+.roster{gap:14px}
+.fighter-card{min-height:224px;border-radius:10px;background:linear-gradient(150deg,#1b1829 0%,#100e19 78%);box-shadow:0 8px 24px #0002}
+.fighter-card .portrait{height:158px;background:linear-gradient(145deg,#211b30,#0c0a13)}
+.fighter-card .portrait img{object-position:center 48%;filter:saturate(.96) contrast(1.06);transition:transform .4s ease,filter .4s ease}
+.fighter-card:hover .portrait img{transform:scale(1.09);filter:saturate(1.12) contrast(1.08)}
+.fighter-card strong{padding:10px 13px 0;font-size:19px;letter-spacing:.8px}
+.fighter-card small{padding:3px 13px 12px;font-size:8px;letter-spacing:1.6px}
+.fighter-card.selected{border-color:#b78aff;background:linear-gradient(150deg,#251b38,#100e19);box-shadow:0 0 0 1px #b78aff55,0 12px 34px #8f50e333}
+.fighter-card.selected:before{content:"SELECIONADO";position:absolute;z-index:2;top:10px;left:10px;padding:5px 8px;border-radius:3px;background:#8f4fe8;color:#fff;font-size:8px;font-weight:900;letter-spacing:1.2px}
+.fighter-detail{position:sticky;top:18px;padding:20px;border-radius:10px;background:linear-gradient(155deg,#191526,#100e19 72%);box-shadow:0 18px 50px #0004}
+.detail-art{height:230px;margin-bottom:20px;border:1px solid #ffffff12;border-radius:7px;background:radial-gradient(ellipse at 50% 70%,#7445a744,transparent 72%),#0b0912!important}
+.detail-art img{object-fit:cover;object-position:center 52%;filter:saturate(1) contrast(1.06)}
+.detail-art:after{inset:58% 0 0;background:linear-gradient(transparent,#0d0b15bb)}
+#detailArt img[alt="NOBARA KUGISAKI"]{object-position:center 76%}
+#detailArt img[alt="SATORU GOJO"]{object-position:center 42%}
+#detailArt img[alt="YUJI ITADORI"]{object-position:center 54%}
+#detailArt img[alt="MEGUMI FUSHIGURO"]{object-position:center 48%}
+#detailArt img[alt="RYOMEN SUKUNA"]{object-position:center 54%}
+#detailArt img[alt="AOI TODO"]{object-position:38% 50%}
+.fighter-detail .eyebrow{font-size:9px}
+.fighter-detail h3{font-size:clamp(30px,3vw,40px);line-height:.98;letter-spacing:.2px;margin:9px 0 10px}
+.fighter-detail p{font-size:12px;line-height:1.75;min-height:58px;margin:0 0 14px;color:#aaa2bc}
+.fighter-detail .stat{margin:14px 0;grid-template-columns:82px 1fr}
+.fighter-detail .stat div{height:7px;background:#302a3e}
+.fighter-detail .full{margin-top:18px;min-height:49px}
+@media(max-width:1050px){
+ .select-layout{grid-template-columns:minmax(0,1.35fr) minmax(300px,.9fr);gap:16px}
+ .roster{gap:10px}
+ .fighter-card{min-height:205px}
+ .fighter-card .portrait{height:140px}
+ .detail-art{height:205px}
+}
+@media(max-width:850px){
+ .select-layout{grid-template-columns:1fr}
+ .fighter-detail{position:static;display:grid;grid-template-columns:minmax(180px,.8fr) 1.2fr;column-gap:20px;align-items:start}
+ .detail-art{grid-column:1;grid-row:1 / span 7;height:220px;margin:0}
+ .fighter-detail>.eyebrow,.fighter-detail h3,.fighter-detail p,.fighter-detail .stat{grid-column:2}
+ .fighter-detail .full{grid-column:1/-1}
+}
+@media(max-width:560px){
+ .select-screen{padding-top:28px}
+ .select-screen .section-heading{align-items:flex-start;gap:12px}
+ .select-screen .section-heading h2{font-size:39px;line-height:.95}
+ .roster{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .fighter-card{min-height:178px}
+ .fighter-card .portrait{height:118px}
+ .fighter-card strong{font-size:16px;padding:8px 9px 0}
+ .fighter-card small{font-size:7px;padding:2px 9px 9px}
+ .fighter-detail{display:block;padding:14px}
+ .detail-art{height:205px;margin-bottom:16px}
+ .fighter-detail h3{font-size:34px}
+}
