@@ -22,7 +22,7 @@ function filteredRoster(){const q=($("rosterSearch")?.value||"").trim().toLowerC
 function makeFighterCard(f,isEnemy){const b=document.createElement("button");b.className="fighter-card"+(isEnemy?(f.id===enemyChoice.id?" opponent-selected":""):(f.id===selected.id?" selected":""));b.innerHTML='<div class="portrait" data-mark="'+f.mark+'" style="--glow:'+f.glow+'"><img src="'+f.image+'" alt="'+f.name+'" loading="lazy" referrerpolicy="no-referrer"><span class="card-number">'+String(roster.indexOf(f)+1).padStart(2,"0")+'</span></div><div class="fighter-card-copy"><strong>'+f.name+'</strong><small>'+(isEnemy?"CPU • ADVERSÁRIO":f.role)+'</small></div>';const img=b.querySelector("img");img.addEventListener("error",()=>{img.remove();b.querySelector(".portrait").classList.add("portrait-fallback");});b.addEventListener("click",()=>{if(isEnemy){enemyChoice=f;buildEnemyRoster();}else{selected=f;buildRoster();showDetail();}});return b;}
 function buildRoster(){const root=$("roster");root.innerHTML="";filteredRoster().forEach(f=>root.appendChild(makeFighterCard(f,false)));buildEnemyRoster();}
 function buildEnemyRoster(){const root=$("enemyRoster");if(!root)return;root.innerHTML="";filteredRoster().forEach(f=>root.appendChild(makeFighterCard(f,true)));}
-function showDetail(){$("fighterRole").textContent=selected.role;$("fighterName").textContent=selected.name;$("fighterDesc").textContent=selected.desc;$("detailArt").innerHTML='<img src="'+selected.image+'" alt="'+selected.name+'" referrerpolicy="no-referrer"><span class="detail-fallback">'+selected.mark+'</span>';const detailImg=$("detailArt").querySelector("img");detailImg.addEventListener("error",()=>{detailImg.remove();$("detailArt").classList.add("detail-image-fallback");});$("detailArt").style.background="radial-gradient(circle,"+selected.glow+"88,transparent 70%),#0d0b15";$("powerBar").style.width=selected.power+"%";$("speedBar").style.width=selected.speed+"%";$("techBar").style.width=selected.tech+"%";}
+function showDetail(){$("fighterRole").textContent=selected.role;$("fighterName").textContent=selected.name;$("fighterSpecial").textContent="TÉCNICA: "+selected.special;$("fighterDesc").textContent=selected.desc;$("detailArt").innerHTML='<img src="'+selected.image+'" alt="'+selected.name+'" referrerpolicy="no-referrer"><span class="detail-fallback">'+selected.mark+'</span>';const detailImg=$("detailArt").querySelector("img");detailImg.addEventListener("error",()=>{detailImg.remove();$("detailArt").classList.add("detail-image-fallback");});$("detailArt").style.background="radial-gradient(circle,"+selected.glow+"88,transparent 70%),#0d0b15";$("powerBar").style.width=selected.power+"%";$("speedBar").style.width=selected.speed+"%";$("techBar").style.width=selected.tech+"%";}
 function fighter(x,side,data){return{x,y:0,vx:0,vy:0,ground:0,onGround:true,hp:100,energy:25,side,data,face:side===1?1:-1,action:"idle",actionTime:0,attackCooldown:0,attackEvent:null,hitFlash:0,combo:0,comboTime:0,blocking:false,stun:0,walk:0,breath:Math.random()*6,charging:false,chargePulse:0,aiMode:"approach",aiModeTime:0};}
 function startFight(){game={p:fighter(220,1,selected),e:fighter(740,-1,enemyChoice),time:99,particles:[],shake:0,hitstop:0,flash:0,frame:0,aiWait:35,message:"FIGHT!",messageTime:90,stage:Math.floor(Math.random()*3),domain:null,domainPulse:0,projectiles:[]};paused=false;finished=false;$("pName").textContent=selected.short;$("eName").textContent=enemyChoice.short;$("overlay").classList.add("hidden");$("battleMessage").textContent="FIGHT!";show("battle");updateHud();last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}
 function input(key){return !!keys[key];}
@@ -30,7 +30,7 @@ function setMessage(t){game.message=t;game.messageTime=70;$("battleMessage").tex
 function spawn(x,y,color,count=10){for(let i=0;i<count;i++)game.particles.push({x,y,vx:(Math.random()-.5)*8,vy:(Math.random()-.7)*8,life:25+Math.random()*20,color,size:2+Math.random()*5});}
 function attack(a,target,type){
  if(a.attackCooldown>0||a.stun>0||a.action==="jump"||a.action==="dash")return;
- const cost=(type==="ultimate"||type==="domain")?70:type==="special"?35:0;
+ const cost=(a.data.id==="gojo"&&type==="ultimate")?100:(type==="ultimate"||type==="domain")?70:type==="special"?35:0;
  if(a.energy<cost){if(a===game.p)setMessage("ENERGIA INSUFICIENTE");return;}
  a.energy-=cost;
  const startup=(type==="ultimate"||type==="domain")?17:type==="special"?12:type==="heavy"?9:5;
@@ -116,7 +116,7 @@ function updateFighter(a,other,dt,isPlayer){
 function resolveAttack(a){
  const ev=a.attackEvent;if(!ev||ev.resolved||game.frame<ev.resolveAt)return;
  ev.resolved=true;const target=ev.target,type=ev.type;
- const range=type==="ultimate"?350:type==="special"?260:type==="heavy"?130:98;
+ const range=type==="ultimate"?350:type==="special"?(["toji","maki"].includes(a.data.id)?150:260):type==="heavy"?130:98;
  let damage=type==="ultimate"?Math.round(38+a.data.tech*.19):type==="special"?Math.round(21+a.data.tech*.12):type==="heavy"?Math.round(15+a.data.power*.07):Math.round(9+a.data.speed*.03);
  let blackFlash=false;
  if(a.data.id==="yuji"&&type!=="ultimate"&&Math.random()<.19){damage=Math.round(damage*2.15);blackFlash=true;game.flash=14;game.shake=12;spawn(a.x+a.face*55,225,"#ffdf9b",28);}
@@ -129,6 +129,14 @@ function resolveAttack(a){
  if(a.data.id==="nobara"&&type==="special"){spawn(target.x,240,"#d99a6c",18);}
  if(a.data.id==="megumi"&&type==="special"){spawn(a.x+a.face*65,290,"#16182c",24);}
  if(a.data.id==="todo"&&type==="special"){spawn(a.x,235,"#d5b4ff",16);}
+ if(a.data.id==="toji"&&type==="special"){damage=Math.round(damage*1.42);target.stun+=10;target.vx=a.face*13;spawn(a.x+a.face*60,245,"#9be6b3",30);game.shake=7;}
+ if(a.data.id==="maki"&&type==="special"){damage=Math.round(damage*1.3);target.stun+=7;target.vx=a.face*10;spawn(a.x+a.face*55,245,"#a9f18f",26);game.shake=6;}
+ if(a.data.id==="yuta"&&type==="special"){target.stun+=6;spawn(target.x,245,"#d9eaff",28);}
+ if(a.data.id==="geto"&&type==="special"){spawn(target.x,245,"#b78cff",30);}
+ if(a.data.id==="choso"&&type==="special"){spawn(target.x,245,"#ff5b76",28);}
+ if(a.data.id==="toji"&&type==="ultimate"){damage=Math.round(damage*1.75);target.stun+=24;target.vx=a.face*18;spawn(target.x,235,"#b2f2c8",55);game.shake=16;game.flash=7;}
+ if(a.data.id==="maki"&&type==="ultimate"){damage=Math.round(damage*1.6);target.stun+=20;target.vx=a.face*16;spawn(target.x,235,"#c2ff9d",48);game.shake=14;}
+
  if(a.data.id==="sukuna"&&type==="ultimate"){spawn(target.x,240,"#ef4c78",40);}
  if(type==="domain"){
   const finishers={
@@ -137,7 +145,12 @@ function resolveAttack(a){
    sukuna:{name:"EXPANSÃO DE DOMÍNIO: SANTUÁRIO MALEVOLENTE",kind:"shrine",life:230},
    yuji:{name:"BLACK FLASH: IMPACTO DA ALMA",kind:"finisher",life:95},
    nobara:{name:"RESSONÂNCIA: BONECO DE PALHA",kind:"finisher",life:95},
-   todo:{name:"BOOGIE WOOGIE: TROCA E COMBO",kind:"finisher",life:95}
+   todo:{name:"BOOGIE WOOGIE: TROCA E COMBO",kind:"finisher",life:95},
+   toji:{name:"RESTRIÇÃO CELESTIAL: CAÇADOR IMPLACÁVEL",kind:"finisher",life:105},
+   yuta:{name:"EXPANSÃO DE DOMÍNIO: AMOR MÚTUO AUTÊNTICO",kind:"love",life:230},
+   geto:{name:"MANIPULAÇÃO DE ESPÍRITOS: DESFILE NOTURNO",kind:"finisher",life:110},
+   maki:{name:"DESPERTAR CELESTIAL: FÚRIA ZENIN",kind:"finisher",life:105},
+   choso:{name:"MANIPULAÇÃO DE SANGUE: SUPERNOVA",kind:"finisher",life:105}
   };
   const domain=finishers[a.data.id];
   if(domain){
@@ -146,9 +159,10 @@ function resolveAttack(a){
    if(domain.kind==="void"){target.stun=Math.max(target.stun,95);target.action="hurt";spawn(target.x,220,"#b7d9ff",38);game.flash=18;}
    if(domain.kind==="shadows"){spawn(a.x,370,"#111326",46);target.stun=Math.max(target.stun,18);}
    if(domain.kind==="shrine"){spawn(target.x,245,"#ef4c78",42);target.stun=Math.max(target.stun,12);}
+   if(domain.kind==="love"){spawn(a.x,245,"#d9edff",45);target.stun=Math.max(target.stun,20);game.flash=12;}
   }
  }
- const rangedMove=type==="special"||(a.data.id==="gojo"&&(type==="heavy"||type==="ultimate"))||(a.data.id==="megumi"&&type==="heavy")||(a.data.id==="nobara"&&type==="heavy");
+ const rangedMove=(type==="special"&&!["toji","maki"].includes(a.data.id))||(type==="ultimate"&&["yuta","geto","choso"].includes(a.data.id))||(a.data.id==="gojo"&&(type==="heavy"||type==="ultimate"))||(a.data.id==="megumi"&&type==="heavy")||(a.data.id==="nobara"&&type==="heavy");
  if(rangedMove){
   const shots={
    gojo:{
@@ -157,6 +171,9 @@ function resolveAttack(a){
     ultimate:{kind:"purple",speed:8.2,damage:Math.round(damage*1.8),size:82,life:125,color:"#bd63ff"}
    },
    yuji:{special:{kind:"shock",speed:12,damage:Math.round(damage*.95),size:19,life:78}},
+   yuta:{special:{kind:"rika",speed:10,damage:Math.round(damage*1.18),size:35,life:100,color:"#c6e4ff"},ultimate:{kind:"rika-burst",speed:8.5,damage:Math.round(damage*1.55),size:62,life:110,color:"#d8ecff"}},
+   geto:{special:{kind:"curse",speed:10.5,damage:Math.round(damage*1.2),size:32,life:100,color:"#b88aff"},ultimate:{kind:"uzumaki",speed:7.5,damage:Math.round(damage*1.7),size:66,life:115,color:"#c18cff"}},
+   choso:{special:{kind:"blood",speed:15,damage:Math.round(damage*1.22),size:19,life:88,color:"#ff536e"},ultimate:{kind:"supernova",speed:9,damage:Math.round(damage*1.6),size:48,life:105,color:"#ff496c"}},
    megumi:{
     heavy:{kind:"divine-dog",speed:13.5,damage:Math.round(damage*1.25),size:27,life:78,color:"#9aa8d9"},
     special:{kind:"nue",speed:9,damage:Math.round(damage*1.3),size:32,life:100,color:"#a9c9ff"}
@@ -176,7 +193,7 @@ function resolveAttack(a){
   }
   spawn(a.x+a.face*48,238,shot.color||a.data.color,shot.kind==="purple"?60:24);
   if(shot.kind==="purple"){game.shake=22;game.flash=18;setMessage("VAZIO ROXO: HOLLOW PURPLE");}
-  else if(a===game.p)setMessage(({gojo:{heavy:"AZUL: LAPSE",special:"REVERSÃO: VERMELHO"},yuji:{special:"PUNHO DIVERGENTE"},megumi:{heavy:"CÃES DIVINOS: INVOCAR",special:"NUE: INVOCAR"},nobara:{heavy:"CHUVA DE PREGOS",special:"HAIRPIN"},sukuna:{special:"DESMANTELAR"},todo:{special:"BOOGIE WOOGIE"}})[a.data.id]?.[type]||"TÉCNICA");
+  else if(a===game.p)setMessage(({gojo:{heavy:"AZUL: LAPSE",special:"REVERSÃO: VERMELHO"},yuji:{special:"PUNHO DIVERGENTE"},megumi:{heavy:"CÃES DIVINOS: INVOCAR",special:"NUE: INVOCAR"},nobara:{heavy:"CHUVA DE PREGOS",special:"HAIRPIN"},sukuna:{special:"DESMANTELAR"},todo:{special:"BOOGIE WOOGIE"},toji:{special:"RESTRIÇÃO CELESTIAL"},yuta:{special:"RIKA: MANIFESTAÇÃO",ultimate:"RIKA: LIBERAÇÃO TOTAL"},geto:{special:"MANIPULAÇÃO DE ESPÍRITOS",ultimate:"UZUMAKI"},maki:{special:"DESPERTAR CELESTIAL"},choso:{special:"PERFURAÇÃO DE SANGUE",ultimate:"SUPERNOVA"}})[a.data.id]?.[type]||"TÉCNICA");
   return;
  }
  const inFront=Math.sign(target.x-a.x)===a.face;
@@ -219,6 +236,7 @@ function update(dt){
    if(d.kind==="shadows"&&d.age>12){const hit=Math.min(d.target.hp,5);d.target.hp-=hit;d.target.stun=Math.max(d.target.stun,5);spawn(d.target.x,250,"#7885d8",8);d.tick=25;}
    if(d.kind==="void"&&d.age>28&&d.age<100){const hit=Math.min(d.target.hp,2);d.target.hp-=hit;d.tick=22;}
    if(d.kind==="finisher"&&d.age>8){const hit=Math.min(d.target.hp,3);d.target.hp-=hit;spawn(d.target.x,245,d.color,6);d.tick=18;}
+   if(d.kind==="love"&&d.age>10){const hit=Math.min(d.target.hp,4);d.target.hp-=hit;d.target.stun=Math.max(d.target.stun,3);spawn(d.target.x+(Math.random()-.5)*55,245,"#dceaff",9);d.tick=20;}
    if(d.target.hp<=0)endFight(d.owner===1?"VITÓRIA!":"DERROTA!");
   }
  }game.time=Math.max(0,game.time-dt/60);
@@ -248,9 +266,9 @@ function update(dt){
 }
 function drawFighter(a){
  const x=a.x,y=370+a.y,face=a.face,t=game.frame,walk=a.walk;
- const isGojo=a.data.id==="gojo",isYuji=a.data.id==="yuji",isMegumi=a.data.id==="megumi",isNobara=a.data.id==="nobara",isSukuna=a.data.id==="sukuna",isTodo=a.data.id==="todo";
- const hair=isGojo?"#f1f0ff":isYuji?"#d98b91":isMegumi?"#171a27":isNobara?"#9a563b":isSukuna?"#ce7788":"#302b34";
- const outfit=isGojo?"#171827":isYuji?"#a83255":isMegumi?"#172238":isNobara?"#6c4238":isSukuna?"#431c32":"#4d3b65";
+ const isGojo=a.data.id==="gojo",isYuji=a.data.id==="yuji",isMegumi=a.data.id==="megumi",isNobara=a.data.id==="nobara",isSukuna=a.data.id==="sukuna",isTodo=a.data.id==="todo",isToji=a.data.id==="toji",isYuta=a.data.id==="yuta",isGeto=a.data.id==="geto",isMaki=a.data.id==="maki",isChoso=a.data.id==="choso";
+ const hair=isGojo?"#f1f0ff":isYuji?"#d98b91":isMegumi?"#171a27":isNobara?"#9a563b":isSukuna?"#ce7788":isMaki?"#315b42":isChoso?"#211a24":"#17151e";
+ const outfit=isGojo?"#171827":isYuji?"#a83255":isMegumi?"#172238":isNobara?"#6c4238":isSukuna?"#431c32":isToji?"#20252a":isYuta?"#d9dce7":isGeto?"#24202f":isMaki?"#244b39":isChoso?"#33243a":"#4d3b65";
  const skin=isSukuna?"#e7b5a8":"#e9c4b5";
  const moving=a.action==="walk"||a.action==="dash";
  const attacking=["light","heavy","special","ultimate"].includes(a.action);
@@ -267,7 +285,7 @@ function drawFighter(a){
  if(a.action==="dash"){ctx.globalAlpha=.22;for(let i=0;i<3;i++){ctx.fillStyle=a.data.color;ctx.beginPath();ctx.ellipse(-22-i*18,-90,24,58,0,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;}
  // legs and boots
  ctx.lineCap="round";ctx.lineJoin="round";
- const legColor=isGojo?"#20253b":isYuji?"#292333":isMegumi?"#111c31":isNobara?"#25202a":isSukuna?"#421e36":"#27212e";
+ const legColor=isGojo?"#20253b":isYuji?"#292333":isMegumi?"#111c31":isNobara?"#25202a":isSukuna?"#421e36":isToji?"#20252a":isYuta?"#d9dce7":isGeto?"#24202f":isMaki?"#244b39":isChoso?"#33243a":"#27212e";
  ctx.strokeStyle=legColor;ctx.lineWidth=17;
  ctx.beginPath();ctx.moveTo(-10,-65);ctx.lineTo(-13-stride,-25);ctx.lineTo(-16-stride,-5);ctx.moveTo(10,-65);ctx.lineTo(13+stride,-25);ctx.lineTo(16+stride,-5);ctx.stroke();
  ctx.fillStyle=isYuji?"#e9d2cc":isNobara?"#bd9a85":"#24202e";
@@ -276,7 +294,7 @@ function drawFighter(a){
  const torso=ctx.createLinearGradient(-30,-155,30,-45);torso.addColorStop(0,outfit);torso.addColorStop(.55,outfit);torso.addColorStop(1,"#0b0b15");
  ctx.fillStyle=torso;ctx.beginPath();ctx.moveTo(-25,-151);ctx.quadraticCurveTo(-35,-135,-29,-85);ctx.lineTo(-23,-54);ctx.quadraticCurveTo(0,-44,24,-54);ctx.lineTo(30,-85);ctx.quadraticCurveTo(35,-135,24,-151);ctx.closePath();ctx.fill();
  // jacket / uniform lapels
- ctx.fillStyle=isGojo?"#303047":isYuji?"#cf496b":isMegumi?"#34445d":isNobara?"#9a6752":isSukuna?"#8c3658":"#80609c";
+ ctx.fillStyle=isGojo?"#303047":isYuji?"#cf496b":isMegumi?"#34445d":isNobara?"#9a6752":isSukuna?"#8c3658":isToji?"#30363b":isYuta?"#f4f5fa":isGeto?"#4a3c5b":isMaki?"#467a53":isChoso?"#59405f":"#80609c";
  ctx.beginPath();ctx.moveTo(-23,-149);ctx.lineTo(-8,-128);ctx.lineTo(-1,-70);ctx.lineTo(-26,-87);ctx.closePath();ctx.fill();
  ctx.beginPath();ctx.moveTo(23,-149);ctx.lineTo(8,-128);ctx.lineTo(1,-70);ctx.lineTo(27,-87);ctx.closePath();ctx.fill();
  // high collar
@@ -435,6 +453,9 @@ function draw(){
    ctx.strokeStyle="#f35c78aa";ctx.lineWidth=3;
    for(let i=0;i<9;i++){const x=(i*127+game.frame*2)%1050-40;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x-85,390);ctx.stroke();}
    ctx.fillStyle="#b92b4d55";ctx.fillRect(0,340,w,44);
+  }else if(d.kind==="love"){
+   const g=ctx.createRadialGradient(480,235,15,480,235,500);g.addColorStop(0,"#d9edff88");g.addColorStop(.4,"#b4a4ff55");g.addColorStop(1,"#090713ee");ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+   ctx.strokeStyle="#e5dcffbb";ctx.lineWidth=3;for(let i=0;i<7;i++){ctx.beginPath();ctx.ellipse(480,245,80+i*48,28+i*18,game.frame*.012*(i%2?1:-1),0,Math.PI*2);ctx.stroke();}
   }else if(d.kind==="shadows"){
    ctx.fillStyle="#070916dd";ctx.fillRect(0,0,w,h);
    for(let i=0;i<8;i++){const x=i*145-30+Math.sin(game.frame*.04+i)*22;ctx.fillStyle=i%2?"#242b54aa":"#11152fee";ctx.beginPath();ctx.moveTo(x,385);ctx.quadraticCurveTo(x-35,235,x+35,150+(i%3)*35);ctx.quadraticCurveTo(x+90,260,x+115,385);ctx.fill();}
@@ -465,6 +486,17 @@ function draw(){
    ctx.fillStyle="#f2c77b";ctx.beginPath();ctx.arc(-18,0,4,0,Math.PI*2);ctx.fill();
   }else if(q.kind==="slash"){
    ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,q.size,-1.05,1.05);ctx.stroke();ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,q.size*.68,-.85,.85);ctx.stroke();
+  }else if(q.kind==="rika"||q.kind==="rika-burst"){
+   ctx.strokeStyle="#e6f4ff";ctx.lineWidth=q.kind==="rika-burst"?6:4;ctx.beginPath();ctx.arc(0,0,q.size*.8,0,Math.PI*2);ctx.stroke();
+   ctx.fillStyle="#d9edff";ctx.beginPath();ctx.ellipse(0,0,q.size*.55,q.size*.72,0,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle="#6f8db5";ctx.beginPath();ctx.arc(-q.size*.18,-q.size*.1,3,0,Math.PI*2);ctx.arc(q.size*.18,-q.size*.1,3,0,Math.PI*2);ctx.fill();
+   if(q.kind==="rika-burst"){ctx.strokeStyle="#fff";ctx.lineWidth=3;for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(0,0,q.size*(.9+i*.13),i*.7,i*.7+1.4);ctx.stroke();}}
+  }else if(q.kind==="curse"||q.kind==="uzumaki"){
+   for(let i=0;i<(q.kind==="uzumaki"?9:5);i++){const ang=game.frame*.09+i*Math.PI*2/((q.kind==="uzumaki")?9:5),r=q.size*(q.kind==="uzumaki"?.55:.35);ctx.fillStyle=i%2?"#e6d4ff":q.color;ctx.beginPath();ctx.arc(Math.cos(ang)*r,Math.sin(ang)*r,q.size*(q.kind==="uzumaki"?.22:.3),0,Math.PI*2);ctx.fill();}
+   ctx.strokeStyle="#e4d4ff";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,q.size*.8,game.frame*.06,game.frame*.06+Math.PI*1.7);ctx.stroke();
+  }else if(q.kind==="blood"||q.kind==="supernova"){
+   ctx.fillStyle=q.color;ctx.beginPath();ctx.arc(0,0,q.size*.62,0,Math.PI*2);ctx.fill();
+   ctx.strokeStyle="#ffb5c0";ctx.lineWidth=3;for(let i=0;i<(q.kind==="supernova"?8:3);i++){const ang=game.frame*.1+i*Math.PI*2/(q.kind==="supernova"?8:3);ctx.beginPath();ctx.arc(Math.cos(ang)*q.size*.75,Math.sin(ang)*q.size*.75,q.size*.25,0,Math.PI*2);ctx.stroke();}
   }else if(q.kind==="blue"){
    const g=ctx.createRadialGradient(-5,-5,2,0,0,q.size);g.addColorStop(0,"#ffffff");g.addColorStop(.28,"#b9f5ff");g.addColorStop(1,"#397bff00");
    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,q.size,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#8beaff";ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,q.size*.72,0,Math.PI*2);ctx.stroke();
@@ -512,7 +544,7 @@ function draw(){
 function updateHud(){if(!game)return;$("pHealth").style.width=game.p.hp+"%";$("eHealth").style.width=game.e.hp+"%";$("pEnergy").style.width=game.p.energy+"%";$("eEnergy").style.width=game.e.energy+"%";$("timer").textContent=Math.ceil(game.time);}
 function loop(t){if(!game)return;const dt=last?Math.min(2.2,(t-last)/16.67):1;last=t;update(dt);draw();if(!finished)raf=requestAnimationFrame(loop);}
 function pause(){if(!game||finished)return;paused=!paused;$("overlay").classList.toggle("hidden",!paused);$("overlayTitle").textContent="PAUSADO";$("overlayText").textContent="A batalha está em pausa.";$("resumeBtn").textContent="CONTINUAR";if(!paused){last=0;raf=requestAnimationFrame(loop);}else cancelAnimationFrame(raf);}
-$("rosterSearch")?.addEventListener("input",buildRoster);$("startBtn").onclick=()=>{show("select");buildRoster();showDetail();};$("backHome").onclick=()=>show("home");$("howBtn").onclick=$("howBtn2").onclick=()=>show("how");$("closeHow").onclick=()=>show("home");$("fightBtn").onclick=startFight;$("pauseBtn").onclick=pause;$("resumeBtn").onclick=()=>{if(finished){show("select");buildRoster();showDetail();}else pause();};$("quitBtn").onclick=()=>{cancelAnimationFrame(raf);game=null;show("select");buildRoster();showDetail();};
+$("rosterSearch")?.addEventListener("input",buildRoster);$("startBtn").onclick=()=>{show("select");buildRoster();showDetail();};$("rosterSearch")?.addEventListener("input",buildRoster);$("backHome").onclick=()=>show("home");$("howBtn").onclick=$("howBtn2").onclick=()=>show("how");$("closeHow").onclick=()=>show("home");$("fightBtn").onclick=startFight;$("pauseBtn").onclick=pause;$("resumeBtn").onclick=()=>{if(finished){show("select");buildRoster();showDetail();}else pause();};$("quitBtn").onclick=()=>{cancelAnimationFrame(raf);game=null;show("select");buildRoster();showDetail();};
 window.addEventListener("keydown",e=>{const k=e.key===" "?"space":e.key.toLowerCase();if(["space","arrowup","arrowdown","arrowleft","arrowright"].includes(k))e.preventDefault();keys[k]=true;if(k==="escape")pause();});window.addEventListener("keyup",e=>{const k=e.key===" "?"space":e.key.toLowerCase();keys[k]=false;});
 canvas.addEventListener("mousedown",e=>{if(e.button===0)keys.mouseleft=true;if(e.button===2)keys.mouseright=true;});window.addEventListener("mouseup",e=>{if(e.button===0)keys.mouseleft=false;if(e.button===2)keys.mouseright=false;});canvas.addEventListener("contextmenu",e=>e.preventDefault());
 document.querySelectorAll(".mobile-controls button").forEach(b=>{const k=b.dataset.key;b.addEventListener("pointerdown",e=>{e.preventDefault();keys[k]=true;});["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false));});
