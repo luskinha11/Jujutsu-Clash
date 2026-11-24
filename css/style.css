@@ -345,3 +345,28 @@
 .opponent-roster{grid-template-columns:repeat(6,minmax(0,1fr))}
 @media(max-width:850px){.roster-toolbar{margin-top:16px}.opponent-roster{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:560px){.roster-toolbar{align-items:stretch;flex-direction:column;gap:9px}.roster-search{width:100%}.opponent-roster{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Matchup selection: player and CPU presented face-to-face */
+.matchup-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:20px 0 26px;position:relative}
+.matchup-card{position:relative;min-width:0;padding:20px 22px 22px;border:1px solid #39304d;border-radius:12px;background:linear-gradient(145deg,#1b1728,#100d18 75%);overflow:hidden;box-shadow:0 18px 48px #0003}
+.matchup-card:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,#9d65ff,transparent 75%)}
+.opponent-detail:before{background:linear-gradient(90deg,#ff568f,transparent 75%)}
+.matchup-label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px;color:#bca0ff;font-size:9px;font-weight:900;letter-spacing:1.5px}
+.matchup-label b{color:#eee5ff;font-size:9px}
+.enemy-label{color:#ff8db2}
+.matchup-card .detail-art{height:220px;margin:0 0 17px;border:1px solid #ffffff12;border-radius:8px;background:#0c0a13;position:relative}
+.matchup-card .detail-art img{object-fit:contain;object-position:center 38%;padding:4px}
+.matchup-card h3{font:900 clamp(25px,3vw,38px)/1 'Barlow Condensed';letter-spacing:.5px;margin:7px 0 9px}
+.matchup-card p{min-height:48px;margin:8px 0 12px;font-size:11px;line-height:1.65;color:#a9a0b8}
+.matchup-card .stat{margin:10px 0}
+.opponent-detail{border-color:#553044}
+.opponent-detail .enemy-detail-art{background:radial-gradient(circle,#a8327244,transparent 70%),#0d0b15}
+.enemy-tech{border-color:#ff568f44;background:#ff568f12;color:#ffc0d4}
+.versus-mark{position:absolute;z-index:4;top:48%;left:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:42px;height:42px;border:1px solid #d5b3ff88;border-radius:50%;background:#110d1b;color:white;font:900 15px 'Barlow Condensed';box-shadow:0 0 25px #9d65ff55;pointer-events:none}
+.opponent-status{display:flex;align-items:center;gap:8px;margin-top:14px;color:#b8aebf;font-size:8px;font-weight:800;letter-spacing:1.1px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#ff6e9c;box-shadow:0 0 10px #ff568f}
+.player-roster{grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:25px}
+.opponent-select{margin-top:0}
+.opponent-roster{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:900px){.matchup-grid{grid-template-columns:1fr 1fr}.player-roster,.opponent-roster{grid-template-columns:repeat(3,minmax(0,1fr))}.matchup-card{padding:16px}.matchup-card .detail-art{height:185px}}
+@media(max-width:620px){.matchup-grid{grid-template-columns:1fr;gap:13px}.versus-mark{top:50%;width:36px;height:36px}.matchup-card .detail-art{height:210px}.player-roster,.opponent-roster{grid-template-columns:repeat(2,minmax(0,1fr))}.matchup-card p{min-height:0}}
