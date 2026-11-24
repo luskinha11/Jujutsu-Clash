@@ -15,7 +15,7 @@ const canvas=$("gameCanvas"),ctx=canvas.getContext("2d");
 function show(name){screens.forEach(s=>$(s).classList.toggle("hidden",s!==name));}
 function buildRoster(){const root=$("roster");root.innerHTML="";roster.forEach(f=>{const b=document.createElement("button");b.className="fighter-card"+(f.id===selected.id?" selected":"");b.innerHTML='<div class="portrait" style="--glow:'+f.glow+'"><img src="'+f.image+'" alt="'+f.name+'" loading="lazy" referrerpolicy="no-referrer"></div><strong>'+f.name+'</strong><small>'+f.role+'</small>';b.addEventListener("click",()=>{selected=f;buildRoster();showDetail();});root.appendChild(b);});}
 function showDetail(){$("fighterRole").textContent=selected.role;$("fighterName").textContent=selected.name;$("fighterDesc").textContent=selected.desc;$("detailArt").innerHTML='<img src="'+selected.image+'" alt="'+selected.name+'" referrerpolicy="no-referrer">';$("detailArt").style.background="radial-gradient(circle,"+selected.glow+"88,transparent 70%),#0d0b15";$("powerBar").style.width=selected.power+"%";$("speedBar").style.width=selected.speed+"%";$("techBar").style.width=selected.tech+"%";}
-function fighter(x,side,data){return{x,y:0,vx:0,vy:0,ground:0,onGround:true,hp:100,energy:25,side,data,face:side===1?1:-1,action:"idle",actionTime:0,attackCooldown:0,attackEvent:null,hitFlash:0,combo:0,comboTime:0,blocking:false,stun:0,walk:0,breath:Math.random()*6,charging:false,chargePulse:0};}
+function fighter(x,side,data){return{x,y:0,vx:0,vy:0,ground:0,onGround:true,hp:100,energy:25,side,data,face:side===1?1:-1,action:"idle",actionTime:0,attackCooldown:0,attackEvent:null,hitFlash:0,combo:0,comboTime:0,blocking:false,stun:0,walk:0,breath:Math.random()*6,charging:false,chargePulse:0,aiMode:"approach",aiModeTime:0};}
 function startFight(){enemyChoice=selected.id==="sukuna"?roster[0]:roster[4];game={p:fighter(220,1,selected),e:fighter(740,-1,enemyChoice),time:99,particles:[],shake:0,hitstop:0,flash:0,frame:0,aiWait:35,message:"FIGHT!",messageTime:90,stage:Math.floor(Math.random()*3),domain:null,domainPulse:0,projectiles:[]};paused=false;finished=false;$("pName").textContent=selected.short;$("eName").textContent=enemyChoice.short;$("overlay").classList.add("hidden");$("battleMessage").textContent="FIGHT!";show("battle");updateHud();last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}
 function input(key){return !!keys[key];}
 function setMessage(t){game.message=t;game.messageTime=70;$("battleMessage").textContent=t;}
@@ -66,14 +66,33 @@ function updateFighter(a,other,dt,isPlayer){
    }
    }
   }else{
-   game.aiWait-=dt;
-   if(game.aiWait<=0){
-    const dist=Math.abs(other.x-a.x), roll=Math.random();
-    if(dist>185&&dist<365&&a.energy>=35&&roll<.48){a.blocking=false;attack(a,other,"special");}
-    else if(dist>185){a.blocking=false;a.vx=a.face*(2.6+a.data.speed*.012);a.action="walk";}
-    else if(roll<.17){a.blocking=true;a.action="block";a.actionTime=11;a.vx=0;}
-    else{a.blocking=false;attack(a,other,roll<.30&&a.energy>=70?"ultimate":roll<.57&&a.energy>=35?"special":roll<.78?"heavy":"light");}
-    game.aiWait=16+Math.random()*23;
+   const dist=Math.abs(other.x-a.x),roll=Math.random();
+   a.aiModeTime-=dt;
+   a.blocking=false;
+   if(a.aiMode==="charge"){
+    a.charging=true;a.vx*=.48;a.action="charge";a.chargePulse+=.22*dt;
+    a.energy=Math.min(100,a.energy+.52*dt);
+    if(Math.random()<.20)spawn(a.x+(Math.random()-.5)*42,370+a.y-95-Math.random()*95,a.data.color,1);
+    if(a.energy>=82||a.aiModeTime<=0){a.aiMode="approach";a.aiModeTime=0;a.charging=false;game.aiWait=8;}
+   }else if(a.aiMode==="retreat"){
+    a.charging=false;
+    if(dist<255){a.vx=-a.face*(3.4+a.data.speed*.012);a.action="walk";}
+    else{a.aiMode="charge";a.aiModeTime=48+Math.random()*35;a.vx=0;a.action="charge";}
+   }else{
+    a.charging=false;
+    // A CPU that has spent energy sometimes creates distance to recover it.
+    if((a.energy<58&&dist<300&&roll<.045)||(a.energy<35&&roll<.10)){
+     a.aiMode="retreat";a.aiModeTime=0;a.vx=-a.face*4.2;a.action="walk";
+    }else{
+     game.aiWait-=dt;
+     if(game.aiWait<=0){
+      if(dist>185&&dist<365&&a.energy>=35&&roll<.48){attack(a,other,"special");}
+      else if(dist>185){a.vx=a.face*(2.6+a.data.speed*.012);a.action="walk";}
+      else if(roll<.17){a.blocking=true;a.action="block";a.actionTime=11;a.vx=0;}
+      else{attack(a,other,roll<.30&&a.energy>=70?"ultimate":roll<.57&&a.energy>=35?"special":roll<.78?"heavy":"light");}
+      game.aiWait=16+Math.random()*23;
+     }
+    }
    }
   }
  }
