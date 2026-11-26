@@ -343,6 +343,24 @@ function drawCustomStageBackground(w,h){
  return true;
 }
 
+
+function drawCustomProjectile(q){
+ const entry=(spriteManifest&&spriteManifest.effects&&spriteManifest.effects[q.kind])||("assets/effects/"+q.kind+".png");
+ const path=typeof entry==="string"?entry:entry&&entry.file;
+ if(!path)return false;
+ const image=getSpriteImage(path);
+ if(!image)return false;
+ const fw=Number(entry.frameWidth)||128,fh=Number(entry.frameHeight)||128;
+ const frames=Math.max(1,Number(entry.frames)||Math.floor(image.naturalWidth/fw));
+ const fps=Number(entry.fps)||14;
+ const frame=Math.floor(game.frame/60*fps)%frames;
+ const size=Math.max(24,(q.size||32)*2.2);
+ ctx.save();ctx.globalCompositeOperation="lighter";ctx.translate(q.x,q.y);ctx.rotate(q.angle||0);
+ ctx.drawImage(image,frame*fw,0,fw,fh,-size/2,-size/2,size,size);
+ ctx.restore();
+ return true;
+}
+
 function drawFighter(a){
  if(drawCustomSpriteFighter(a))return;
  const x=a.x,y=370+a.y,face=a.face,t=game.frame,walk=a.walk;
@@ -560,6 +578,7 @@ function draw(){
  ctx.save();ctx.translate(480,390);ctx.rotate(game.frame*.003);ctx.strokeStyle="#b18aff25";ctx.setLineDash([8,12]);ctx.beginPath();ctx.ellipse(0,0,195,28,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
  // Ranged cursed techniques with distinct shapes, trails and animated cores
  game.projectiles.forEach(q=>{
+  if(drawCustomProjectile(q))return;
   ctx.save();ctx.globalCompositeOperation="lighter";
   q.trail.forEach((pt,i)=>{ctx.globalAlpha=(i/q.trail.length)*.34;ctx.fillStyle=q.color;ctx.beginPath();ctx.arc(pt.x,pt.y,Math.max(2,q.size*(i/q.trail.length)*.55),0,Math.PI*2);ctx.fill();});
   ctx.globalAlpha=.95;ctx.translate(q.x,q.y);ctx.rotate(q.angle);ctx.shadowColor=q.color;ctx.shadowBlur=25;
