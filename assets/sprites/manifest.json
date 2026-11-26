@@ -79,7 +79,63 @@
   },
   "characters": {
     "gojo": {
-      "folder": "gojo"
+      "folder": "gojo",
+      "actionMap": {
+        "block": "crouch",
+        "heavy": "red",
+        "special": "blue",
+        "ultimate": "purple"
+      },
+      "animations": {
+        "idle": {
+          "file": "idle.png",
+          "frames": 5,
+          "fps": 7,
+          "loop": true
+        },
+        "walk": {
+          "file": "walk.png",
+          "frames": 6,
+          "fps": 10,
+          "loop": true
+        },
+        "crouch": {
+          "file": "crouch.png",
+          "frames": 5,
+          "fps": 8,
+          "loop": true
+        },
+        "jump": {
+          "file": "jump.png",
+          "frames": 5,
+          "fps": 9,
+          "loop": false
+        },
+        "blue": {
+          "file": "blue.png",
+          "frames": 10,
+          "fps": 12,
+          "loop": false
+        },
+        "red": {
+          "file": "red.png",
+          "frames": 4,
+          "fps": 10,
+          "loop": false
+        },
+        "purple": {
+          "file": "purple.png",
+          "frames": 12,
+          "fps": 12,
+          "loop": false
+        },
+        "domain": {
+          "file": "domain.png",
+          "frames": 14,
+          "fps": 10,
+          "loop": false
+        }
+      }
     },
     "yuji": {
       "folder": "yuji"
