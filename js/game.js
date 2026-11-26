@@ -308,10 +308,15 @@ function drawCustomSpriteFighter(a){
   const fallback={walkBack:"walk",fall:"jump",dash:"walk",hurt:"idle",block:"idle",charge:"idle",light:"idle",heavy:"idle",special:"idle",ultimate:"idle",domain:"idle"};
   action=fallback[action]||"idle";
  }
- const anim=cfg.animations[action]||cfg.animations.idle;
+ let anim=cfg.animations[action]||cfg.animations.idle;
  if(!anim)return false;
- const path=(cfg.folder||a.data.id)+"/"+anim.file;
- const image=getSpriteImage("assets/sprites/"+path);
+ let path=(cfg.folder||a.data.id)+"/"+anim.file;
+ let image=getSpriteImage("assets/sprites/"+path);
+ if(!image&&action!=="idle"&&cfg.animations.idle){
+  anim=cfg.animations.idle;
+  path=(cfg.folder||a.data.id)+"/"+anim.file;
+  image=getSpriteImage("assets/sprites/"+path);
+ }
  if(!image)return false;
  const fw=Number(cfg.frameWidth)||256,fh=Number(cfg.frameHeight)||256;
  const frameCount=Math.max(1,Number(anim.frames)||Math.floor(image.naturalWidth/fw));
