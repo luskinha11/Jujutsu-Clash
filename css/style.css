@@ -372,3 +372,64 @@
 @media(max-width:620px){.matchup-grid{grid-template-columns:1fr;gap:13px}.versus-mark{top:50%;width:36px;height:36px}.matchup-card .detail-art{height:210px}.player-roster,.opponent-roster{grid-template-columns:repeat(2,minmax(0,1fr))}.matchup-card p{min-height:0}}
 
 .detail-fallback{display:none}.detail-image-fallback .detail-fallback{display:block;font:900 120px 'Barlow Condensed';color:#ffffff66;text-align:center}.detail-image-fallback{display:grid;place-items:center}
+
+/* Complete alternate character-select layout */
+.select-screen{max-width:1440px;margin:0 auto;padding-bottom:44px}
+.select-topline{margin-bottom:22px}
+.select-workbench{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(340px,.82fr);gap:20px;align-items:stretch}
+.roster-panel,.matchup-panel{min-width:0;border:1px solid #ffffff16;border-radius:13px;background:linear-gradient(150deg,#171321,#0c0a12 78%);box-shadow:0 24px 70px #0005}
+.roster-panel{padding:19px}
+.roster-panel-head,.matchup-panel-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.roster-panel-head h3,.matchup-panel-top h3{font:900 30px/1 "Barlow Condensed";margin:5px 0 0;color:#f7f1ff}
+.roster-count{padding:7px 10px;border:1px solid #a879ff44;border-radius:4px;color:#d8c1ff;font:900 9px Inter;letter-spacing:1.3px}
+.pick-tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:18px 0 12px;padding:5px;border:1px solid #ffffff12;border-radius:7px;background:#09070e}
+.pick-tab{min-height:39px;border:1px solid transparent;border-radius:5px;background:transparent;color:#92899f;font:900 10px Inter;letter-spacing:1px;cursor:pointer;transition:.2s}
+.pick-tab.active{background:linear-gradient(110deg,#784ac0,#a55c9b);color:white;box-shadow:0 5px 18px #8d50c744}
+.select-search{width:100%;margin:0 0 14px;background:#09070f;border-color:#ffffff1b}
+.new-roster-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-height:590px;overflow:auto;padding:2px 5px 8px 2px}
+.new-fighter-card{min-width:0;min-height:150px;padding:0;overflow:hidden;border:1px solid #ffffff13;border-radius:7px;background:#100d18;transition:transform .2s,border-color .2s,box-shadow .2s}
+.new-fighter-card:hover{transform:translateY(-3px);border-color:#b58aff88;box-shadow:0 10px 25px #0005}
+.new-fighter-card.selected{border-color:#b58aff;box-shadow:0 0 0 1px #b58aff66,0 0 24px #a879ff22}
+.new-fighter-card.opponent-selected{border-color:#ff6c9d;box-shadow:0 0 0 1px #ff6c9d66,0 0 24px #ff568f22}
+.new-fighter-card .portrait{height:112px;border-radius:0;background:radial-gradient(circle,var(--glow),#0c0a12 75%)}
+.new-fighter-card .portrait img{width:100%;height:100%;object-fit:cover;object-position:center 25%;transition:transform .3s}
+.new-fighter-card:hover .portrait img{transform:scale(1.06)}
+.new-fighter-card .fighter-card-copy{padding:9px 8px 10px;text-align:left}
+.new-fighter-card .fighter-card-copy strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.new-fighter-card .fighter-card-copy small{font-size:7px;letter-spacing:.6px}
+.roster-hint{margin-top:12px;color:#746b80;font-size:8px;font-weight:800;letter-spacing:1.5px;text-align:center}
+.matchup-panel{position:relative;padding:20px;overflow:hidden}
+.matchup-panel:before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#9d6cff,#ff6a9c)}
+.matchup-panel-top h3 em{color:#c29aff;font-style:normal}
+.matchup-live{display:flex;align-items:center;gap:7px;color:#a9e9c0;font:900 8px Inter;letter-spacing:1.2px}
+.matchup-live i{width:6px;height:6px;border-radius:50%;background:#6ee6a1;box-shadow:0 0 10px #6ee6a1}
+.faceoff-stage{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0 17px;padding:13px 10px 14px;border:1px solid #ffffff12;border-radius:8px;background:radial-gradient(ellipse at 25% 45%,#8d62d322,transparent 50%),radial-gradient(ellipse at 78% 45%,#d34d7922,transparent 50%),#0b0911}
+.faceoff-fighter{min-width:0;text-align:center}
+.faceoff-side{margin-bottom:8px;color:#c7a8ff;font-size:8px;font-weight:900;letter-spacing:1.5px}
+.cpu-side{color:#ff9ab8}
+.faceoff-portrait{height:185px;position:relative;overflow:hidden;border:1px solid #a879ff55;border-radius:6px;background:#161020}
+.faceoff-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 25%}
+.enemy-faceoff .faceoff-portrait{border-color:#ff6c9d66}
+.faceoff-fighter strong{display:block;margin-top:10px;color:#fff;font:900 20px/1 "Barlow Condensed";white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.faceoff-fighter small{display:block;margin-top:5px;color:#9c91aa;font-size:7px;font-weight:800;letter-spacing:.7px}
+.faceoff-vs{position:absolute;z-index:2;top:45%;left:50%;transform:translate(-50%,-50%) rotate(-8deg);display:grid;place-items:center;width:38px;height:38px;border:1px solid #ead9ff;border-radius:50%;background:#21152f;color:#fff;font:900 15px "Barlow Condensed";box-shadow:0 0 24px #a879ff77}
+.faceoff-info{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-column{min-width:0;padding:11px;border:1px solid #ffffff12;border-radius:6px;background:#ffffff05}
+.info-label{display:block;margin-bottom:7px;color:#a98bda;font-size:7px;font-weight:900;letter-spacing:1.2px}
+.info-column b{display:block;color:#f0e9fa;font:900 13px "Barlow Condensed";overflow-wrap:anywhere}
+.info-column p{margin:6px 0 0;color:#9e95a9;font-size:9px;line-height:1.5}
+.enemy-info .info-label{color:#ff8eae}
+.matchup-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.matchup-stats .stat{margin:0}
+.matchup-stats .stat span{font-size:7px}
+.matchup-footer{display:flex;align-items:center;gap:12px;padding-top:14px;border-top:1px solid #ffffff12}
+.matchup-note{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.matchup-note>span{color:#c7a3ff;font-size:20px}
+.matchup-note b,.matchup-note small{display:block}
+.matchup-note b{color:#eee4ff;font-size:8px;letter-spacing:1px}
+.matchup-note small{margin-top:4px;color:#8c8298;font-size:7px}
+.matchup-footer .primary{width:auto;min-width:160px;padding:13px 15px;font-size:9px}
+.matchup-footer .primary span{margin-left:8px}
+@media(max-width:1050px){.select-workbench{grid-template-columns:minmax(0,1fr) minmax(310px,.9fr)}.new-roster-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.faceoff-portrait{height:155px}}
+@media(max-width:760px){.select-workbench{grid-template-columns:1fr}.new-roster-grid{grid-template-columns:repeat(3,minmax(0,1fr));max-height:none}.matchup-panel{order:-1}.faceoff-portrait{height:190px}}
+@media(max-width:480px){.roster-panel,.matchup-panel{padding:13px}.new-roster-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.new-fighter-card .portrait{height:120px}.faceoff-portrait{height:145px}.faceoff-fighter strong{font-size:17px}.matchup-footer{align-items:stretch;flex-direction:column}.matchup-footer .primary{width:100%}.faceoff-info{gap:7px}.info-column{padding:8px}}
