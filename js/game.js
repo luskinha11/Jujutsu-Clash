@@ -266,7 +266,85 @@ function update(dt){
  game.shake=Math.max(0,game.shake-dt);game.flash=Math.max(0,(game.flash||0)-dt);
  updateHud();
 }
+
+// ============================================================
+// SPRITE SYSTEM — coloque PNGs em assets/sprites/<personagem>/
+// Cada arquivo é uma spritesheet horizontal, com quadros iguais.
+// ============================================================
+let spriteManifest = null;
+const spriteImageCache = new Map();
+
+fetch("assets/sprites/manifest.json")
+ .then(r=>{if(!r.ok)throw new Error("manifesto não encontrado");return r.json();})
+ .then(data=>{spriteManifest=data;})
+ .catch(()=>{spriteManifest=null;});
+
+function getSpriteImage(path){
+ if(!path)return null;
+ let img=spriteImageCache.get(path);
+ if(!img){
+  img=new Image();
+  img.src=path;
+  spriteImageCache.set(path,img);
+ }
+ return img.complete&&img.naturalWidth>0?img:null;
+}
+
+function getCharacterSpriteConfig(id){
+ if(!spriteManifest)return null;
+ const defaults=spriteManifest.defaults||{};
+ const character=(spriteManifest.characters||{})[id]||{};
+ return {...defaults,...character,animations:{...(defaults.animations||{}),...(character.animations||{})}};
+}
+
+function drawCustomSpriteFighter(a){
+ const cfg=getCharacterSpriteConfig(a.data.id);
+ if(!cfg||!cfg.animations)return false;
+ let action=a.action||"idle";
+ if(action==="walk")action=a.vx*a.face<-.65?"walkBack":"walk";
+ else if(action==="jump"&&a.vy>1)action="fall";
+ else if(action==="block"||a.blocking)action="block";
+ if(!cfg.animations[action]) {
+  const fallback={walkBack:"walk",fall:"jump",dash:"walk",hurt:"idle",block:"idle",charge:"idle",light:"idle",heavy:"idle",special:"idle",ultimate:"idle",domain:"idle"};
+  action=fallback[action]||"idle";
+ }
+ const anim=cfg.animations[action]||cfg.animations.idle;
+ if(!anim)return false;
+ const path=(cfg.folder||a.data.id)+"/"+anim.file;
+ const image=getSpriteImage("assets/sprites/"+path);
+ if(!image)return false;
+ const fw=Number(cfg.frameWidth)||256,fh=Number(cfg.frameHeight)||256;
+ const frameCount=Math.max(1,Number(anim.frames)||Math.floor(image.naturalWidth/fw));
+ const fps=Number(anim.fps)||10;
+ let frame=Math.floor(game.frame/60*fps);
+ if(anim.loop===false)frame=Math.min(frameCount-1,frame);
+ else frame=frame%frameCount;
+ const row=Number(anim.row)||0;
+ const dw=Number(anim.drawWidth)||cfg.drawWidth||190;
+ const dh=Number(anim.drawHeight)||cfg.drawHeight||240;
+ const ox=Number(anim.offsetX)||0,oy=Number(anim.offsetY)||0;
+ ctx.save();
+ ctx.translate(a.x,370+a.y);
+ ctx.scale(a.face,1);
+ ctx.drawImage(image,frame*fw,row*fh,fw,fh,-dw/2+ox,-dh+oy,dw,dh);
+ ctx.restore();
+ return true;
+}
+
+function drawCustomStageBackground(w,h){
+ const stages=spriteManifest&&spriteManifest.stages;
+ if(!stages)return false;
+ const entry=stages[String(game.stage)]||stages[game.stage];
+ const path=typeof entry==="string"?entry:entry&&entry.file;
+ if(!path)return false;
+ const image=getSpriteImage(path);
+ if(!image)return false;
+ ctx.drawImage(image,0,0,w,h);
+ return true;
+}
+
 function drawFighter(a){
+ if(drawCustomSpriteFighter(a))return;
  const x=a.x,y=370+a.y,face=a.face,t=game.frame,walk=a.walk;
  const isGojo=a.data.id==="gojo",isYuji=a.data.id==="yuji",isMegumi=a.data.id==="megumi",isNobara=a.data.id==="nobara",isSukuna=a.data.id==="sukuna",isTodo=a.data.id==="todo",isToji=a.data.id==="toji",isYuta=a.data.id==="yuta",isGeto=a.data.id==="geto",isMaki=a.data.id==="maki",isChoso=a.data.id==="choso";
  const hair=isGojo?"#f1f0ff":isYuji?"#d98b91":isMegumi?"#171a27":isNobara?"#9a563b":isSukuna?"#ce7788":isMaki?"#315b42":isChoso?"#211a24":"#17151e";
@@ -401,6 +479,8 @@ function drawFighter(a){
 function draw(){
  const w=960,h=480;ctx.save();ctx.scale(4/3,1.5);
  if(game.shake>0)ctx.translate((Math.random()-.5)*game.shake,(Math.random()-.5)*game.shake);
+ const customStage=drawCustomStageBackground(w,h);
+ if(!customStage){
  const stages=[["#111326","#292044","#704d83"],["#0b1b2a","#1c4054","#66859b"],["#1a1020","#3b1b38","#a34c70"]][game.stage];
  const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,stages[0]);sky.addColorStop(.68,stages[1]);sky.addColorStop(1,"#15101c");ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
  // moonlight and drifting atmosphere
@@ -443,6 +523,7 @@ function draw(){
  }
  // skyline / temple silhouettes
  for(let layer=0;layer<3;layer++){ctx.fillStyle=layer===0?"#080b19aa":layer===1?"#111224bb":"#171326";const base=315+layer*19;for(let i=0;i<11;i++){const bx=i*105-20+layer*15,bw=55+(i%3)*12,bh=85+(i*37%105);ctx.fillRect(bx,base-bh,bw,bh);ctx.fillRect(bx-8,base-bh-7,bw+16,7);if(i%3===0){ctx.fillRect(bx+bw/2-3,base-bh-26,6,20);ctx.beginPath();ctx.moveTo(bx-15,base-bh-7);ctx.lineTo(bx+bw/2,base-bh-20);ctx.lineTo(bx+bw+15,base-bh-7);ctx.fill();}}}
+ }
  // Character-specific domain visuals
  if(game.domain){
   const d=game.domain, pulse=1+Math.sin(game.frame*.16)*.045;
