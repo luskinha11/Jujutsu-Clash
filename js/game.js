@@ -318,12 +318,18 @@ function drawCustomSpriteFighter(a){
   image=getSpriteImage("assets/sprites/"+path);
  }
  if(!image)return false;
- const fw=Number(cfg.frameWidth)||256,fh=Number(cfg.frameHeight)||256;
- const frameCount=Math.max(1,Number(anim.frames)||Math.floor(image.naturalWidth/fw));
+ // Usa as dimensões reais do PNG: evita recortes vazios quando a folha
+ // foi exportada com quadros menores/diferentes do padrão do manifesto.
+ const declaredFrames=Number(anim.frames)||0;
+ const fw=Number(anim.frameWidth)||(declaredFrames>0?image.naturalWidth/declaredFrames:(Number(cfg.frameWidth)||256));
+ const fh=Number(anim.frameHeight)||image.naturalHeight;
+ if(!Number.isFinite(fw)||!Number.isFinite(fh)||fw<=0||fh<=0||image.naturalWidth<fw||image.naturalHeight<fh)return false;
+ const frameCount=Math.max(1,declaredFrames||Math.floor(image.naturalWidth/fw));
+ const safeFrameCount=Math.min(frameCount,Math.max(1,Math.floor(image.naturalWidth/fw)));
  const fps=Number(anim.fps)||10;
- let frame=Math.floor(game.frame/60*fps);
- if(anim.loop===false)frame=Math.min(frameCount-1,frame);
- else frame=frame%frameCount;
+ let frame=Math.floor((a.actionTime>0?Math.max(0,(Number(anim.totalFrames)||frameCount)-a.actionTime):game.frame/60*fps));
+ if(anim.loop===false)frame=Math.min(safeFrameCount-1,frame);
+ else frame=frame%safeFrameCount;
  const row=Number(anim.row)||0;
  const dw=Number(anim.drawWidth)||cfg.drawWidth||190;
  const dh=Number(anim.drawHeight)||cfg.drawHeight||240;
@@ -331,7 +337,8 @@ function drawCustomSpriteFighter(a){
  ctx.save();
  ctx.translate(a.x,370+a.y);
  ctx.scale(a.face,1);
- ctx.drawImage(image,frame*fw,row*fh,fw,fh,-dw/2+ox,-dh+oy,dw,dh);
+ try{ctx.drawImage(image,Math.floor(frame*fw),Math.floor(row*fh),Math.ceil(fw),Math.ceil(fh),-dw/2+ox,-dh+oy,dw,dh);}
+ catch(error){ctx.restore();return false;}
  ctx.restore();
  return true;
 }
