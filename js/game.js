@@ -274,7 +274,7 @@ function update(dt){
 let spriteManifest = null;
 const spriteImageCache = new Map();
 
-fetch("assets/sprites/manifest.json")
+fetch("assets/sprites/manifest.json?v=2")
  .then(r=>{if(!r.ok)throw new Error("manifesto não encontrado");return r.json();})
  .then(data=>{spriteManifest=data;})
  .catch(()=>{spriteManifest=null;});
