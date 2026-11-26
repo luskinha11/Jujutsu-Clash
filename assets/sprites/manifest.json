@@ -1,0 +1,120 @@
+{
+  "defaults": {
+    "frameWidth": 256,
+    "frameHeight": 256,
+    "drawWidth": 190,
+    "drawHeight": 240,
+    "animations": {
+      "idle": {
+        "file": "idle.png",
+        "fps": 7,
+        "loop": true
+      },
+      "walk": {
+        "file": "walk.png",
+        "fps": 10,
+        "loop": true
+      },
+      "walkBack": {
+        "file": "walk-back.png",
+        "fps": 9,
+        "loop": true
+      },
+      "jump": {
+        "file": "jump.png",
+        "fps": 9,
+        "loop": false
+      },
+      "fall": {
+        "file": "fall.png",
+        "fps": 8,
+        "loop": true
+      },
+      "dash": {
+        "file": "dash.png",
+        "fps": 14,
+        "loop": false
+      },
+      "block": {
+        "file": "block.png",
+        "fps": 8,
+        "loop": true
+      },
+      "hurt": {
+        "file": "hurt.png",
+        "fps": 10,
+        "loop": false
+      },
+      "charge": {
+        "file": "charge.png",
+        "fps": 9,
+        "loop": true
+      },
+      "light": {
+        "file": "light.png",
+        "fps": 13,
+        "loop": false
+      },
+      "heavy": {
+        "file": "heavy.png",
+        "fps": 12,
+        "loop": false
+      },
+      "special": {
+        "file": "special.png",
+        "fps": 12,
+        "loop": false
+      },
+      "ultimate": {
+        "file": "ultimate.png",
+        "fps": 11,
+        "loop": false
+      },
+      "domain": {
+        "file": "domain.png",
+        "fps": 10,
+        "loop": false
+      }
+    }
+  },
+  "characters": {
+    "gojo": {
+      "folder": "gojo"
+    },
+    "yuji": {
+      "folder": "yuji"
+    },
+    "megumi": {
+      "folder": "megumi"
+    },
+    "nobara": {
+      "folder": "nobara"
+    },
+    "sukuna": {
+      "folder": "sukuna"
+    },
+    "todo": {
+      "folder": "todo"
+    },
+    "toji": {
+      "folder": "toji"
+    },
+    "yuta": {
+      "folder": "yuta"
+    },
+    "geto": {
+      "folder": "geto"
+    },
+    "maki": {
+      "folder": "maki"
+    },
+    "choso": {
+      "folder": "choso"
+    }
+  },
+  "stages": {
+    "0": "assets/stages/stage-1.png",
+    "1": "assets/stages/stage-2.png",
+    "2": "assets/stages/stage-3.png"
+  }
+}
