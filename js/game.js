@@ -300,7 +300,7 @@ function getCharacterSpriteConfig(id){
 function drawCustomSpriteFighter(a){
  const cfg=getCharacterSpriteConfig(a.data.id);
  if(!cfg||!cfg.animations)return false;
- let action=a.action||"idle";
+ let action=(cfg.actionMap&&cfg.actionMap[a.action])||a.action||"idle";
  if(action==="walk")action=a.vx*a.face<-.65?"walkBack":"walk";
  else if(action==="jump"&&a.vy>1)action="fall";
  else if(action==="block"||a.blocking)action="block";
